@@ -1,6 +1,3 @@
-![C0](https://github.com/user-attachments/assets/94c603b6-5a38-40d8-9658-9ca46e8db6f4)
-
-<br />
 
 # Apple Store: Design Patterns
 
@@ -131,5 +128,3 @@ The goal is to offer a reference for applying these concepts within a specific d
 > _Reference: Design Patterns: Elements of Reusable Object-Oriented Software_
 
 <br />
-
-![C1](https://github.com/user-attachments/assets/1e40f626-06c5-4deb-9ffd-9845a44e7ce5)
