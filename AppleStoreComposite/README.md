@@ -1,10 +1,16 @@
-![C0](https://github.com/user-attachments/assets/94c603b6-5a38-40d8-9658-9ca46e8db6f4)
+# Composite
 
 <br />
 
-## Composite
+![Composite](https://github.com/user-attachments/assets/dfbd0dbd-1ab2-47b1-8fcf-6d5cb7307234)
 
-The Composite Design Pattern is a structural pattern that allows you to create tree-like structures to represent groups of objects. This pattern enables you to treat individual objects and collections of objects uniformly, simplifying your code and enhancing flexibility.
+<br />
+
+## Theory
+
+> Compose objects into tree structures to represent part-whole hierarchies. Composite lets clients treat individual objects and compositions of objects uniformly. 
+>
+> _Reference: Design Patterns: Elements of Reusable Object-Oriented Software_
 
 #### Component: A protocol that represents all objects in the hierarchy
 
@@ -45,10 +51,6 @@ struct Leaf: Component {
 }
 ```
 
-> Compose objects into tree structures to represent part-whole hierarchies. Composite lets clients treat individual objects and compositions of objects uniformly. 
->
-> _Reference: Design Patterns: Elements of Reusable Object-Oriented Software_
+## Application
 
-<br />
-
-![C1](https://github.com/user-attachments/assets/1e40f626-06c5-4deb-9ffd-9845a44e7ce5)
+The Composite Design Pattern is a structural pattern that allows you to create tree-like structures to represent groups of objects. This pattern enables you to treat individual objects and collections of objects uniformly, simplifying your code and enhancing flexibility.
