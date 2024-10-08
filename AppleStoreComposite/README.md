@@ -1,16 +1,14 @@
-# Composite
-
-<br />
-
 ![Composite](https://github.com/user-attachments/assets/dfbd0dbd-1ab2-47b1-8fcf-6d5cb7307234)
 
 <br />
 
-## Theory
+# Composite
 
 > Compose objects into tree structures to represent part-whole hierarchies. Composite lets clients treat individual objects and compositions of objects uniformly. 
 >
 > _Reference: Design Patterns: Elements of Reusable Object-Oriented Software_
+
+## Elements
 
 #### Component: A protocol that represents all objects in the hierarchy
 
