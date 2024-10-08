@@ -35,6 +35,8 @@ The goal is to offer a reference for applying these concepts within a specific d
 >
 > _Reference: Design Patterns: Elements of Reusable Object-Oriented Software_
 
+- [Composite](https://github.com/shaun-culver/AppleStore/blob/main/AppleStoreComposite/README.md)
+
 ## Decorator
 
 > Attach additional responsibilities to an object dynamically. Decorators provide a flexible alternative to subclassing for extending functionality.
