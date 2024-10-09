@@ -1,5 +1,7 @@
 ![5thAvenueNewYorkAppleStore](https://github.com/user-attachments/assets/386bae20-b662-470b-97a1-83b7ee367dfc)
 
+<br />
+
 # Apple Store: Design Patterns
 
 This is a collection of the classic design patterns applied to a single domain: the Apple Store.
