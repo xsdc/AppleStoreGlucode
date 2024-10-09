@@ -4,7 +4,7 @@
 
 # Composite
 
-> Compose objects into tree structures to represent part-whole hierarchies. Composite lets clients treat individual objects and compositions of objects uniformly. 
+> Compose objects into tree structures to represent part-whole hierarchies. Composite lets clients treat individual objects and compositions of objects uniformly.
 >
 > _Reference: Design Patterns: Elements of Reusable Object-Oriented Software_
 
@@ -26,7 +26,7 @@ struct Composite: Component {
     let id: String
     let name: String
     var children: [Component] = []
-    
+
     mutating func addComponent(_ component: Component) {
         children.append(component)
     }
@@ -49,6 +49,6 @@ struct Leaf: Component {
 }
 ```
 
-## Application
+## Apple Store application
 
 The Composite Design Pattern is a structural pattern that allows you to create tree-like structures to represent groups of objects. This pattern enables you to treat individual objects and collections of objects uniformly, simplifying your code and enhancing flexibility.
