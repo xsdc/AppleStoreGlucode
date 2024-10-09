@@ -1,3 +1,6 @@
+![5thAvenueNewYorkAppleStore](https://github.com/user-attachments/assets/386bae20-b662-470b-97a1-83b7ee367dfc)
+
+<br />
 
 # Apple Store: Design Patterns
 
