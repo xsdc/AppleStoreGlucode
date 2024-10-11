@@ -92,7 +92,7 @@ public protocol CatalogItem: Hashable {
 - Given any product or category, we want to be able to retrieve the path of parent categories leading to it by calling a shared method.
 - To achieve this, the `CatalogItem` protocol defines a method call `path` that returns an array of strings representing the path of categories leading to the item.
 - To keep track of parent items efficiently, we also require a `parent` property that holds a reference to the parent category.
-- By doing this, we are provided with a clear way to understand the hierarchy of categories leading to a specific product or category.
+- By doing this, we are provided with a simple way to retrieve the hierarchy of categories leading to a specific product or category.
 
 ```swift
 public protocol CatalogItem: Hashable {
