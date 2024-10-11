@@ -63,7 +63,9 @@ Two examples are provided illustrating the practical application of the composit
 In our examples, the definitions are mapped to the domain as follows:
 
 Component -> `CatalogItem`
+
 Composite -> `CateglogCategory`
+
 Leaf -> `CatalogProduct`
 
 ### Simple Example
