@@ -68,7 +68,7 @@ Leaf -> `CatalogProduct`
 
 ### Simple Example
 
-In the first example, we define a protocol for catalog items that includes an analytics event identifier. This ensures that all items in the tree structure have a consistent way to log events.
+In the first example, we define a protocol for catalog items that includes an analytics event identifier.
 
 ```swift
 public protocol CatalogItem: Hashable {
