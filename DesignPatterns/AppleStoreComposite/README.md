@@ -10,10 +10,10 @@
 
 ## Overview
 
-- Often applications have a hierarchical tree structures where individual items (leaves) and groups of items (composites) exist together.
+- Often, applications have a hierarchical tree structures where individual items (leaves) and groups of items (composites) coexist.
 - For example, a file system includes files and directories, with directories able to contain both files and other directories.
-- The composite design pattern solves this issue by creating a shared interface, called the component interface, that allows clients to interact with both individual items and groups of items in a consistent manner.
-- For example, deleting a file or directory from a file system should be as simple as calling a single method, regardless of whether the item is a file or a directory.
+- The Composite design pattern solves this issue by creating a shared interface, called the component interface, that allows clients to interact with both individual items and groups of items in a consistent manner.
+- For instance, deleting a file or directory from a file system should be as simple as calling a single method, regardless of whether the item is a file or a directory.
 
 ## Definitions
 
@@ -58,9 +58,9 @@ struct Leaf: Component {
 
 ## Apple Store application
 
-Two examples are provided illustrating the practical application of the composite pattern, both applied to the Apple Store product catalog.
+Two examples are provided to illustrate the practical application of the Composite pattern, both applied to the Apple Store product catalog.
 
-In our examples, the definitions are mapped to the domain as follows:
+In these examples, the definitions are mapped to the domain as follows:
 
 Component -> `CatalogItem`
 
@@ -73,7 +73,7 @@ Leaf -> `CatalogProduct`
 - In the simple example, we unify the need for logging analytics events for categories and products.
 - First, we define a protocol called `CatalogItem` (component), which will be shared between `CateglogCategory` and `CatalogProduct`.
 - Then we include the `analyticsEvent` method, which returns a string representing the event to be logged.
-- This approach allows for a unified way of approaching event logging when users interact with items in the catalog, whether they are categories or products.
+- This approach allows for a unified way of logging events when users interact with items in the catalog, whether they are categories or products.
 
 ```swift
 public protocol CatalogItem: Hashable {
@@ -88,9 +88,9 @@ public protocol CatalogItem: Hashable {
 
 ### Nested Example
 
-- In the nested example, we aim to give any item within the hierachy a uniform way of displaying breadcrumb navigation.
+- In the nested example, we provide any item within the hierachy a uniform way of displaying breadcrumb navigation.
 - Given any product or category, we want to be able to retrieve the path of parent categories leading to it by calling a shared method.
-- To do this, the `CatalogItem` protocol defines a method call `path` that returns an array of strings representing the path of categories leading to the item.
+- To achieve this, the `CatalogItem` protocol defines a method call `path` that returns an array of strings representing the path of categories leading to the item.
 - To keep track of parent items efficiently, we also require a `parent` property that holds a reference to the parent category.
 - By doing this, we are provided with a clear way to understand the hierarchy of categories leading to a specific product or category.
 
