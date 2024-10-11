@@ -10,8 +10,10 @@
 
 ## Overview
 
-The composite design pattern addresses the challenge of treating objects in a tree structure uniformly. By defining a shared interface, known as the component interface, it allows clients to interact with both individual objects (leaves) and groups of objects (composites) in a consistent manner.
-This pattern is particularly useful when you need to perform operations on all objects within a tree structure, regardless of whether they are leaves or composites.
+- Often applications have a hierarchical tree structures where individual items (leaves) and groups of items (composites) exist together.
+- For example, a file system includes files and directories, with directories able to contain both files and other directories.
+- The composite design pattern solves this issue by creating a shared interface, called the component interface, that allows clients to interact with both individual items and groups of items in a consistent manner.
+- For example, deleting a file or directory from a file system should be as simple as calling a single method, regardless of whether the item is a file or a directory.
 
 ## Definitions
 
@@ -61,14 +63,15 @@ Two examples are provided illustrating the practical application of the composit
 In our examples, the definitions are mapped to the domain as follows:
 
 Component -> `CatalogItem`
-
 Composite -> `CateglogCategory`
-
 Leaf -> `CatalogProduct`
 
 ### Simple Example
 
-In the first example, we define a protocol for catalog items that includes an analytics event identifier.
+- In the simple example, we unify the need for logging analytics events for categories and products.
+- First, we define a protocol called `CatalogItem` (component), which will be shared between `CateglogCategory` and `CatalogProduct`.
+- Then we include the `analyticsEvent` method, which returns a string representing the event to be logged.
+- This approach allows for a unified way of approaching event logging when users interact with items in the catalog, whether they are categories or products.
 
 ```swift
 public protocol CatalogItem: Hashable {
@@ -78,11 +81,16 @@ public protocol CatalogItem: Hashable {
 }
 ```
 
-This approach allows for simple event logging when users interact with items in the catalog.
+- In the simple example, when selecting a category or product, the `analyticsEvent` method is called and the event is logged.
+- The working SwiftUI is kept simple to illustrate this concept of the shared interface, ommiting the implementation of nested categories and products.
 
 ### Nested Example
 
-In the second example, we expand the CatalogItem protocol to include a method that retrieves the path of parent categories, enabling breadcrumb navigation.
+- In the nested example, we aim to give any item within the hierachy a uniform way of displaying breadcrumb navigation.
+- Given any product or category, we want to be able to retrieve the path of parent categories leading to it by calling a shared method.
+- To do this, the `CatalogItem` protocol defines a method call `path` that returns an array of strings representing the path of categories leading to the item.
+- To keep track of parent items efficiently, we also require a `parent` property that holds a reference to the parent category.
+- By doing this, we are provided with a clear way to understand the hierarchy of categories leading to a specific product or category.
 
 ```swift
 public protocol CatalogItem: Hashable {
@@ -92,5 +100,3 @@ public protocol CatalogItem: Hashable {
     func path() -> [String]
 }
 ```
-
-This method provides a clear way to understand the hierarchy of categories leading to a specific product.
