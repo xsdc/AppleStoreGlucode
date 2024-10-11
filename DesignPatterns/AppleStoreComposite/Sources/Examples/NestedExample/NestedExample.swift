@@ -1,76 +1,138 @@
 import SwiftUI
 
 public struct NestedExampleComposite {
-    public protocol Component: Hashable {
+    // Component
+    public protocol CatalogItem: Hashable {
+        var parent: (any NestedExampleComposite.CatalogItem)? { get }
+        
         var id: String { get }
+        
         var name: String { get }
+        
+        func path() -> [String]
     }
     
-    public struct Category: Component {
-        public let id: String
-        public let name: String
-        public var children: [any Component] = []
+    // Composite
+    public class CatalogCategory: CatalogItem, ObservableObject {
+        public var parent: (any NestedExampleComposite.CatalogItem)?
         
-        public mutating func addComponent(_ component: any Component) {
-            children.append(component)
+        public let id: String
+        
+        public let name: String
+        
+        @Published public var children: [any CatalogItem] = []
+        
+        public init(parent: (any NestedExampleComposite.CatalogItem)?, id: String, name: String) {
+            self.parent = parent
+            self.id = id
+            self.name = name
         }
         
-        public mutating func removeComponent(_ component: any Component) {
-            if let index = children.firstIndex(where: { $0.id == component.id }) {
-                children.remove(at: index)
+        public func path() -> [String] {
+            var path: [String] = [name]
+            var nextParent: (any NestedExampleComposite.CatalogItem)? = parent
+            
+            while let currentParent = nextParent {
+                path.append(currentParent.name)
+                
+                nextParent = currentParent.parent
             }
+            
+            return path
+        }
+        
+        public func addCategory(name: String) {
+            var category = NestedExampleComposite.CatalogCategory(
+                parent: self,
+                id: UUID().uuidString,
+                name: name
+            )
+            
+            children.append(category)
+        }
+        
+        public func addProduct() {
+            let product = NestedExampleComposite.CatalogProduct(
+                parent: self,
+                id: UUID().uuidString,
+                name: "AirPods Pro",
+                description: "Pro-level Active Noise Cancellation and a breakthrough in hearing health.",
+                price: 999.00
+            )
+            
+            children.append(product)
         }
         
         public func hash(into hasher: inout Hasher) {
             hasher.combine(id)
         }
         
-        public static func == (lhs: Category, rhs: Category) -> Bool {
+        public static func == (lhs: CatalogCategory, rhs: CatalogCategory) -> Bool {
             return lhs.id == rhs.id
         }
     }
     
-    public struct Product: Component {
+    // Leaf
+    public struct CatalogProduct: CatalogItem {
+        public var parent: (any NestedExampleComposite.CatalogItem)?
+        
         public let id: String
+        
         public let name: String
+        
         public let description: String
+        
         public let price: Double
         
+        public func path() -> [String] {
+            var path: [String] = [name]
+            var nextParent: (any NestedExampleComposite.CatalogItem)? = parent
+            
+            while let currentParent = nextParent {
+                path.append(currentParent.name)
+                
+                nextParent = currentParent.parent
+            }
+            
+            return path
+        }
+        
         public func hash(into hasher: inout Hasher) {
             hasher.combine(id)
         }
         
-        public static func == (lhs: Product, rhs: Product) -> Bool {
+        public static func == (lhs: CatalogProduct, rhs: CatalogProduct) -> Bool {
             return lhs.id == rhs.id
         }
-    }
-}
-
-public class NestedExampleViewModel: ObservableObject {
-    @Published public var rootComponent = NestedExampleComposite.Category(id: "0", name: "Catalog")
-    
-    public func addCategory() {
-        var category = NestedExampleComposite.Category(id: UUID().uuidString, name: "Category")
-        rootComponent.addComponent(category)
-    }
-    
-    public func addProduct() {
-        let product = NestedExampleComposite.Product(
-            id: UUID().uuidString,
-            name: "AirPods Pro",
-            description: "Pro-level Active Noise Cancellation and a breakthrough in hearing health.",
-            price: 999.00
-        )
-        rootComponent.addComponent(product)
     }
 }
 
 public struct NestedExampleView: View {
-    @StateObject public var viewModel = NestedExampleViewModel()
+    @StateObject public var rootCatalogCategory = NestedExampleComposite.CatalogCategory(parent: nil, id: "0", name: "Catalog")
     
     public var body: some View {
         NavigationStack {
-            if viewModel.rootComponent.children.isEmpty {
+            NestedExampleCategoryView(parentCategory: rootCatalogCategory)
+        }
+    }
+}
+
+public struct NestedExampleCategoryView: View {
+    @ObservedObject public var parentCategory: NestedExampleComposite.CatalogCategory
+    
+    @State private var selectedProduct: NestedExampleComposite.CatalogProduct?
+    
+    @State private var productSheetIsPresented = false
+    
+    @State private var categorySheetIsPresented = false
+    
+    @State private var alertIsPresented = false
+    
+    @State private var categoryName = ""
+    
+    public var body: some View {
+        Group {
+            if parentCategory.children.isEmpty {
                 ContentUnavailableView {
                     Label("No Components", systemImage: "cube")
                 } description: {
@@ -78,56 +140,101 @@ public struct NestedExampleView: View {
                 }
             }
             else {
+                let categories = parentCategory.children.compactMap {
+                    $0 as? NestedExampleComposite.CatalogCategory
+                }
+                
+                let products = parentCategory.children.compactMap {
+                    $0 as? NestedExampleComposite.CatalogProduct
+                }
+                
                 List {
-                    Section(header: Text("Categories")) {
-                        ForEach(viewModel.rootComponent.children.compactMap {
-                            $0 as? NestedExampleComposite.Category
-                        }, id: \.id) { category in
-                            NavigationLink(destination: CategoryView()) {
-                                HStack {
-                                    Image(systemName: "cube")
-                                        .padding(4)
-                                    VStack {
-                                        Text(category.name)
-                                            .font(.headline)
+                    if !categories.isEmpty {
+                        Section(header: Text("Categories")) {
+                            ForEach(categories, id: \.id) { category in
+                                let destination = NestedExampleCategoryView(parentCategory: category)
+                                NavigationLink(destination: destination) {
+                                    HStack {
+                                        Image(systemName: "cube")
+                                            .padding(4)
+                                        VStack {
+                                            Text(category.name)
+                                                .font(.headline)
+                                        }
                                     }
+                                    .padding(4)
                                 }
-                                .padding(4)
                             }
                         }
                     }
                     
-                    Section(header: Text("Products")) {
-                        ForEach(viewModel.rootComponent.children.compactMap {
-                            $0 as? NestedExampleComposite.Product
-                        }, id: \.id) { product in
-                            HStack {
-                                Image(systemName: "airpodspro")
-                                    .padding(4)
-                                VStack(alignment: .leading) {
-                                    Text(product.name)
-                                        .font(.subheadline)
-                                    Text(product.description)
-                                        .font(.caption)
+                    if !products.isEmpty {
+                        Section(header: Text("Products")) {
+                            ForEach(products, id: \.id) { product in
+                                Button(action: {
+                                    selectedProduct = product
+                                    productSheetIsPresented = true
+                                }) {
+                                    HStack {
+                                        Image(systemName: "airpodspro")
+                                            .padding(4)
+                                        VStack(alignment: .leading) {
+                                            Text(product.name)
+                                                .font(.subheadline)
+                                            Text(product.description)
+                                                .font(.caption)
+                                        }
+                                    }
                                 }
+                                .buttonStyle(PlainButtonStyle())
                             }
                         }
                     }
                 }
             }
         }
-        .navigationTitle("Nested Example")
+        .alert("Add Category", isPresented: $alertIsPresented) {
+            TextField("Category", text: $categoryName)
+            Button("Add", action: {
+                if !categoryName.isEmpty {
+                    parentCategory.addCategory(name: categoryName)
+                    categoryName = ""
+                }
+            })
+            Button("Cancel", role: .cancel) {
+                alertIsPresented = false
+            }
+        }
+        .navigationTitle(parentCategory.name)
+        .sheet(isPresented: $categorySheetIsPresented) {
+            NestedExamplePathView(path: parentCategory.path())
+        }
+        .sheet(isPresented: $productSheetIsPresented) {
+            if let path = selectedProduct?.path() {
+                NestedExamplePathView(path: path)
+            }
+        }
         .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: {
+                    categorySheetIsPresented = true
+                }) {
+                    Image(systemName: "list.bullet.indent")
+                }
+            }
+            
             ToolbarItem(placement: .bottomBar) {
                 HStack {
                     Button(action: {
-                        viewModel.addCategory()
+                        alertIsPresented = true
                     }) {
                         Text("Add Category")
                     }
+                    
                     Spacer()
+                    
                     Button(action: {
-                        viewModel.addProduct()
+                        parentCategory.addProduct()
                     }) {
                         Text("Add Product")
                     }
@@ -137,62 +244,22 @@ public struct NestedExampleView: View {
     }
 }
 
-public struct CategoryView: View {
-    @StateObject public var viewModel = NestedExampleViewModel()
+struct NestedExamplePathView: View {
+    let path: [String]
     
     public var body: some View {
         NavigationStack {
-            if viewModel.rootComponent.children.isEmpty {
-                ContentUnavailableView {
-                    Label("No Components", systemImage: "cube")
-                } description: {
-                    Text("Add a category or product from the toolbar.")
-                }
-            }
-            else {
-                List {
-                    Section(header: Text("Categories")) {
-                        ForEach(viewModel.rootComponent.children.compactMap {
-                            $0 as? NestedExampleComposite.Category
-                        }, id: \.id) { category in
-                            NavigationLink(destination: NestedExampleView()) {
-                                HStack {
-                                    Image(systemName: "cube")
-                                        .padding(4)
-                                    VStack {
-                                        Text(category.name)
-                                            .font(.headline)
-                                    }
-                                }
-                                .padding(4)
-                            }
-                        }
-                    }
-                    
-                    Section(header: Text("Products")) {
-                        ForEach(viewModel.rootComponent.children.compactMap {
-                            $0 as? NestedExampleComposite.Product
-                        }, id: \.id) { product in
-                            HStack {
-                                Image(systemName: "airpodspro")
-                                    .padding(4)
-                                VStack(alignment: .leading) {
-                                    Text(product.name)
-                                        .font(.subheadline)
-                                    Text(product.description)
-                                        .font(.caption)
-                                }
-                            }
-                        }
+            List {
+                Section(header: Text("Path")) {
+                    ForEach(path, id: \.self) { category in
+                        Text(category)
                     }
                 }
             }
         }
-        .navigationTitle("Category")
     }
 }
 
 #Preview {
     NestedExampleView()
 }
-

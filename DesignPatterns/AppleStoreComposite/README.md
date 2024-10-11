@@ -8,7 +8,12 @@
 >
 > _Reference: Design Patterns: Elements of Reusable Object-Oriented Software_
 
-## Elements
+## Overview
+
+The composite design pattern addresses the challenge of treating objects in a tree structure uniformly. By defining a shared interface, known as the component interface, it allows clients to interact with both individual objects (leaves) and groups of objects (composites) in a consistent manner.
+This pattern is particularly useful when you need to perform operations on all objects within a tree structure, regardless of whether they are leaves or composites.
+
+## Definitions
 
 #### Component: A protocol that represents all objects in the hierarchy
 
@@ -51,4 +56,41 @@ struct Leaf: Component {
 
 ## Apple Store application
 
-The Composite Design Pattern is a structural pattern that allows you to create tree-like structures to represent groups of objects. This pattern enables you to treat individual objects and collections of objects uniformly, simplifying your code and enhancing flexibility.
+Two examples are provided illustrating the practical application of the composite pattern, both applied to the Apple Store product catalog.
+
+In our examples, the definitions are mapped to the domain as follows:
+
+Component -> `CatalogItem`
+
+Composite -> `CateglogCategory`
+
+Leaf -> `CatalogProduct`
+
+### Simple Example
+
+In the first example, we define a protocol for catalog items that includes an analytics event identifier. This ensures that all items in the tree structure have a consistent way to log events.
+
+```swift
+public protocol CatalogItem: Hashable {
+    var id: String { get }
+    var name: String { get }
+    func analyticsEvent() -> String
+}
+```
+
+This approach allows for simple event logging when users interact with items in the catalog.
+
+### Nested Example
+
+In the second example, we expand the CatalogItem protocol to include a method that retrieves the path of parent categories, enabling breadcrumb navigation.
+
+```swift
+public protocol CatalogItem: Hashable {
+    var parent: (any NestedExampleComposite.CatalogItem)? { get }
+    var id: String { get }
+    var name: String { get }
+    func path() -> [String]
+}
+```
+
+This method provides a clear way to understand the hierarchy of categories leading to a specific product.
