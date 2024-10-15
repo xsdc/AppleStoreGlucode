@@ -8,6 +8,8 @@ This is a collection of the classic design patterns applied to a single domain: 
 
 The goal is to offer a reference for applying these concepts within a specific domain and demonstrate how they can be integrated with SwiftUI view models.
 
+See the spreadsheet for an overview of how each element of each design pattern is applied to the Apple Store: https://docs.google.com/spreadsheets/d/1HnHCCylKFTA5m8ntD-YJWKRpHjqPLB-p9_gWDCsyQYM/edit?usp=sharing
+
 - [Adapter](https://github.com/shaun-culver/AppleStore/blob/main/DesignPatterns/AppleStoreAdapter/README.md)
 - [Bridge](https://github.com/shaun-culver/AppleStore/blob/main/DesignPatterns/AppleStoreBridge/README.md)
 - [Builder](https://github.com/shaun-culver/AppleStore/blob/main/DesignPatterns/AppleStoreBuilder/README.md)
