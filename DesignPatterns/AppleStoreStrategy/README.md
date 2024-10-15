@@ -1,4 +1,4 @@
-![Strategy](https://github.com/user-attachments/assets/d42ec330-9247-4b80-acc0-f08165898f43)
+![Strategy](https://github.com/user-attachments/assets/94c6b446-531f-4942-87bc-e3c17fe0392b)
 
 <br />
 
