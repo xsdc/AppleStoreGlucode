@@ -1,3 +1,5 @@
+![Strategy](https://github.com/user-attachments/assets/d42ec330-9247-4b80-acc0-f08165898f43)
+
 <br />
 
 # Strategy
