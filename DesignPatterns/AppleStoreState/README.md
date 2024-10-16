@@ -65,7 +65,7 @@ struct StateB: State {
 
 - The State pattern can be applied to the Apple Store to manage the state of an order. An order can be in multiple states, such as `Pending`, `Shipped`, and `Cancelled`, each with its own behavior.
 - The `OrderState` protocol defines the functions that illustrates how calling the same function can have different behavior based on the state of the order.
-- The `NotificationService` implementation further illustrates how the state change can trigger different behavior. The example shows how messages sent depend on the current state.
+- The `NotificationService` implementation illustrates how the current state can trigger different messages to be sent.
 
 #### Context
 
