@@ -6,6 +6,8 @@
 >
 > _Reference: Design Patterns: Elements of Reusable Object-Oriented Software_
 
+## Overview
+
 - The Bridge pattern is a structural design pattern that decouples an abstraction from its implementation, allowing the two to evolve independently. This is particularly useful in scenarios where an abstraction can have multiple implementations, and those implementations can change over time.
 - For example, consider a blog application that allows users to create and publish posts. The application may have a `Post` class that represents a blog post, and a `PostRenderer` class that renders the post in different formats (e.g., HTML, Markdown, etc.). The `Post` class may have a `render` method that delegates the rendering to the `PostRenderer` class. The `PostRenderer` class may have multiple implementations, such as `HtmlPostRenderer` and `MarkdownPostRenderer`, each of which renders the post in a different format.
 - By using the Bridge pattern, we can decouple the `Post` class from the `PostRenderer` class, allowing the two to evolve independently. This makes it easier to add new rendering formats or change the existing ones without modifying the `Post` class.
@@ -25,30 +27,30 @@ protocol Abstraction {
 
 ```swift
 class RefinedAbstraction: Abstraction {
-    var implementation: Implementation
+    var implementor: Implementor
 
-    init(implementation: Implementation) {
-        self.implementation = implementation
+    init(implementor: Implementor) {
+        self.implementor = implementor
     }
 
     func operation() -> String {
-        return "RefinedAbstraction: \(implementation.operationImplementation())"
+        return implementation.operationImplementation()
     }
 }
 ```
 
-#### Implementation: The low-level interface that defines the implementation
+#### Implementor: Defines the interface for implementation classes
 
 ```swift
-protocol Implementation {
+protocol Implementor {
     func operationImplementation() -> String
 }
 ```
 
-#### Concrete Implementation: Implements the Implementation interface
+#### Concrete Implementor: Implements the Implementor interface and defines its concrete implementation
 
 ```swift
-class ConcreteImplementationA: Implementation {
+class ConcreteImplementorA: Implementor {
     func operationImplementation() -> String {
         return "ConcreteImplementationA"
     }
@@ -84,7 +86,7 @@ struct CheckoutPaymentBridge: PaymentBridge {
 }
 ```
 
-#### Implementation
+#### Implementor
 
 ```swift
 protocol PaymentProvider {
@@ -92,7 +94,7 @@ protocol PaymentProvider {
 }
 ```
 
-#### Concrete Implementations
+#### Concrete Implementor
 
 ````swift
 struct ApplePayPaymentProvider: PaymentProvider {
