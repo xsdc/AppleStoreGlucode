@@ -92,7 +92,9 @@ public class AuthenticationHandler: Handler {
 }
 ```
 
-Client: Initiates the request to a ConcreteHandler object on the chain.
+Client:
+
+Initiates the request to a ConcreteHandler object on the chain.
 
 ```swift
 public struct BagService {
