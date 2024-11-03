@@ -6,6 +6,41 @@
 >
 > _Reference: Design Patterns: Elements of Reusable Object-Oriented Software_
 
-## Elements
+## Pattern overview
 
-## Apple Store application
+## Problem statement
+
+## Domain application
+
+Iterator:
+
+Defines an interface for accessing and traversing elements.
+
+```swift
+
+```
+
+Concretelterator:
+
+- Implements the Iterator interface.
+- Keeps track of the current position in the traversal of the aggregate.
+
+```swift
+
+```
+
+Aggregate:
+
+Defines an interface for creating an Iterator object.
+
+```swift
+
+```
+
+ConcreteAggregate:
+
+Implements the Iterator creation interface to return an instance of the proper Concretelterator.
+
+```swift
+
+```

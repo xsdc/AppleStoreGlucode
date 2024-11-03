@@ -33,3 +33,7 @@ See the spreadsheet for an overview of how each element of each design pattern i
 - [Visitor](https://github.com/shaun-culver/AppleStore/blob/main/DesignPatterns/AppleStoreVisitor/README.md)
 
 <br />
+
+## References
+
+- Design Patterns: Elements of Reusable Object-Oriented Software - Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides
