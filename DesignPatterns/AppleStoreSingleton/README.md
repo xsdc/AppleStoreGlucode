@@ -38,7 +38,4 @@ class UserInformation {
         return "Hello, \(name)"
     }
 }
-
-let userInformation = UserInformation.shared
-userInformation.getGreeting()
 ```
