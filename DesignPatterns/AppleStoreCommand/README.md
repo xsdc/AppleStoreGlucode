@@ -27,7 +27,7 @@ Command:
 Declares an interface for executing an operation.
 
 ```swift
-protocol Command {
+protocol ImageCommand {
     func execute()
 }
 ```
@@ -78,7 +78,7 @@ struct Navigation {
 
 Receiver:
 
-- Knows how to perform the operations associated with carrying out a request. 
+- Knows how to perform the operations associated with carrying out a request.
 - Any class may serve as a Receiver.
 
 ```swift

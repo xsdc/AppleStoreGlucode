@@ -14,7 +14,8 @@
 
 ## Problem statement
 
-- We want to add an authentication check to a service that clears a users Apple Store bag without changing the service itself.
+- We want to add an authentication check to a service that clears a users Apple Store bag.
+- The proxy pattern allows us to add this layer of authentication without changing the bag service.
 
 ## Domain application
 
@@ -26,18 +27,16 @@ Proxy:
 - Controls access to the real subject and may be responsible for creating and deleting it.
 
 ```swift
-class AuthenticationProxyForBagService: BaseBagService {
-    let bagService: BaseBagService
+class BagServiceWithAuthentication: AuthenticatedBagService {
     let authenticationService: AuthenticationService
+    let bagService: BaseBagService
 
-    func clear() async -> Result<Bool, Error> {
-        let result = await authenticationService.checkIfSessionIsValid()
-
-        guard case .success = result else {
-            return result
+    func clear() -> Bool {
+        if authenticationService.checkIfSessionIsValid() {
+            return bagService.clear()
+        } else {
+            return false
         }
-
-        return await bagService.clear()
     }
 }
 ```
@@ -47,8 +46,8 @@ Subject:
 Defines the common interface for RealSubject and Proxy so that a Proxy can be used anywhere a RealSubject is expected.
 
 ```swift
-protocol BaseBagService {
-    func clear() async -> Result<Bool, Error>
+protocol AuthenticatedBagService {
+    func clear()
 }
 ```
 
@@ -57,9 +56,9 @@ RealSubject:
 Defines the real object that the proxy represents.
 
 ```swift
-class BagService: BaseBagService {
-    func clear() async -> Result<ProxySuccess, ProxyFailure> {
-        return .success(.bagClearSuccess)
+class BagService: AuthenticatedBagService {
+    func clear() -> Bool {
+        return true
     }
 }
 ```
