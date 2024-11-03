@@ -8,7 +8,14 @@
 
 ## Pattern overview
 
+- The Visitor pattern allows you to add new operations to existing object structures without modifying those structures.
+- For example, for a shooter game, you can add a new operation to the game objects to calculate the damage they receive when hit by a bullet.
+- This can be done without modifying the game objects themselves.
+
 ## Problem statement
+
+- We would like a way of to update pricing for products in a catalog without increasing the complexity of the product classes.
+- The visitor pattern allows us to do this by separating the calculation logic from the product classes.
 
 ## Domain application
 
@@ -20,7 +27,9 @@ Visitor:
 - Then the visitor can access the element directly through its particular interface.
 
 ```swift
-
+protocol ProductVisitor {
+  func accept(visitor: ProductVisitor)
+}
 ```
 
 Concrete Visitor:
@@ -31,7 +40,21 @@ Concrete Visitor:
 - This state often accumulates results during the traversal of the structure.
 
 ```swift
+class EducationDiscountVisitor: ProductVisitor {
+    private let discountPercentage = 0.25
 
+    func visit(product: Product) {
+        product.price -= product.price * discountPercentage
+    }
+}
+
+class EmployeeDiscountVisitor: ProductVisitor {
+    private let discountPercentage = 0.5
+
+    func visit(product: Product) {
+        product.price -= product.price * discountPercentage
+    }
+}
 ```
 
 Element:
@@ -39,7 +62,9 @@ Element:
 Defines an Accept operation that takes a visitor as an argument.
 
 ```swift
-
+protocol Product {
+    func accept(visitor: inout ProductVisitor)
+}
 ```
 
 ConcreteElement:
@@ -47,7 +72,23 @@ ConcreteElement:
 Implements an Accept operation that takes a visitor as an argument.
 
 ```swift
+struct MacBookProduct: Product {
+    let id: String
+    let price: Double
 
+    func accept(visitor: ProductVisitor) {
+        visitor.visit(macProduct: self)
+    }
+}
+
+struct VisionProduct: Product {
+    let id: String
+    let price: Double
+
+    func accept(visitor: ProductVisitor) {
+        visitor.visit(visionProduct: self)
+    }
+}
 ```
 
 ObjectStructure:
@@ -57,5 +98,17 @@ ObjectStructure:
 - May either be a composite or a collection such as a list or a set.
 
 ```swift
+class Catalog {
+    private var products: [Product] = []
 
+    func addProduct(_ product: Product) {
+        products.append(product)
+    }
+
+    func accept(visitor: ProductVisitor) {
+        for product in products {
+            product.acceptVisitor(visitor: &visitor)
+        }
+    }
+}
 ```

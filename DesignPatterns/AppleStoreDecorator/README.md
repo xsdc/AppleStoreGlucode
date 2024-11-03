@@ -36,7 +36,7 @@ ConcreteComponent:
 Defines an object to which additional responsibilities can be attached.
 
 ```swift
-class MacProduct: Product {
+class MacBookProProduct: Product {
     func getPrice() -> Double {
         return 9999.00
     }
