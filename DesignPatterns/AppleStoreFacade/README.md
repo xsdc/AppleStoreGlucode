@@ -30,7 +30,7 @@ class OrderProccessor {
     private let bag: Bag
     private let paymentService: PaymentService
 
-    init(bagService: Bag, paymentService: PaymentService) {
+    init(bag: Bag, paymentService: PaymentService) {
         self.bag = bag
         self.paymentService = paymentService
     }
