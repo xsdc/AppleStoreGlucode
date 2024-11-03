@@ -1,3 +1,5 @@
+![Visitor](https://github.com/user-attachments/assets/e860e3c8-0d4e-4a54-b2c9-ab5def845aea)
+
 <br />
 
 # Visitor
@@ -101,13 +103,9 @@ ObjectStructure:
 class Catalog {
     private var products: [Product] = []
 
-    func addProduct(_ product: Product) {
-        products.append(product)
-    }
-
     func accept(visitor: ProductVisitor) {
         for product in products {
-            product.acceptVisitor(visitor: &visitor)
+            product.accept(visitor: visitor)
         }
     }
 }
