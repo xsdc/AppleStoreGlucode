@@ -1,3 +1,5 @@
+![Decorator](https://github.com/user-attachments/assets/79606909-0f77-4fde-af76-6dd43c31ea1c)
+
 <br />
 
 # Decorator
@@ -36,7 +38,7 @@ ConcreteComponent:
 Defines an object to which additional responsibilities can be attached.
 
 ```swift
-class MacBookProProduct: Product {
+class MacBookProduct: Product {
     func getPrice() -> Double {
         return 9999.00
     }
