@@ -9,7 +9,6 @@ import AppleStoreComposite
 import AppleStoreDecorator
 import AppleStoreFacade
 import AppleStoreFactory
-import AppleStoreFlyweight
 import AppleStoreIterator
 import AppleStoreMediator
 import AppleStoreMemento
@@ -54,9 +53,6 @@ struct AppleStoreList: View {
                 }
                 NavigationLink(destination: AppleStoreFacadeView()) {
                     Text("Facade")
-                }
-                NavigationLink(destination: AppleStoreFlyweightView()) {
-                    Text("Flyweight")
                 }
                 NavigationLink(destination: AppleStoreProxyView()) {
                     Text("Proxy")

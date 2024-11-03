@@ -33,7 +33,6 @@ package.dependencies = [
     .package(path: "../DesignPatterns/AppleStoreDecorator"),
     .package(path: "../DesignPatterns/AppleStoreFacade"),
     .package(path: "../DesignPatterns/AppleStoreFactory"),
-    .package(path: "../DesignPatterns/AppleStoreFlyweight"),
     .package(path: "../DesignPatterns/AppleStoreIterator"),
     .package(path: "../DesignPatterns/AppleStoreMediator"),
     .package(path: "../DesignPatterns/AppleStoreMemento"),
@@ -45,7 +44,9 @@ package.dependencies = [
     .package(path: "../DesignPatterns/AppleStoreStrategy"),
     .package(path: "../DesignPatterns/AppleStoreTemplateMethod"),
     .package(path: "../DesignPatterns/AppleStoreVisitor"),
+    .package(path: "../OtherPatterns")
 ]
+
 package.targets = [
     .target(name: "AppleStore",
         dependencies: [
@@ -58,7 +59,6 @@ package.targets = [
             .product(name: "AppleStoreDecorator", package: "AppleStoreDecorator"),
             .product(name: "AppleStoreFacade", package: "AppleStoreFacade"),
             .product(name: "AppleStoreFactory", package: "AppleStoreFactory"),
-            .product(name: "AppleStoreFlyweight", package: "AppleStoreFlyweight"),
             .product(name: "AppleStoreIterator", package: "AppleStoreIterator"),
             .product(name: "AppleStoreMediator", package: "AppleStoreMediator"),
             .product(name: "AppleStoreMemento", package: "AppleStoreMemento"),
@@ -70,9 +70,11 @@ package.targets = [
             .product(name: "AppleStoreStrategy", package: "AppleStoreStrategy"),
             .product(name: "AppleStoreTemplateMethod", package: "AppleStoreTemplateMethod"),
             .product(name: "AppleStoreVisitor", package: "AppleStoreVisitor"),
+            .product(name: "OtherPatterns", package: "OtherPatterns")
         ]
     )
 ]
+
 package.platforms = [
     .iOS("17.0"),
     .macOS("14.0")
