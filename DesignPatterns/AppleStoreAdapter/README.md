@@ -58,7 +58,7 @@ Adapter:
 Adapts the interface of Adaptee to the Target interface.
 
 ```swift
-struct MachineLearningRecommendationEngine: RecommendationEngineAdapter {
+class MachineLearningRecommendationEngine: RecommendationEngineAdapter {
     struct MachineLearningServiceProduct {
         let machineLearningId: String
         let machineLearningName: String
@@ -76,7 +76,7 @@ struct MachineLearningRecommendationEngine: RecommendationEngineAdapter {
     }
 }
 
-struct HistoryRecommendationEngine: RecommendationEngineAdapter {
+class HistoryRecommendationEngine: RecommendationEngineAdapter {
     struct HistoryServiceProduct {
         let historyId: String
         let historyName: String
