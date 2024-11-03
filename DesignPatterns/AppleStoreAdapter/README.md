@@ -1,3 +1,5 @@
+![Adapter](https://github.com/user-attachments/assets/1ade6f0e-2ca8-4821-b319-64784de1d353)
+
 <br />
 
 # Adapter
