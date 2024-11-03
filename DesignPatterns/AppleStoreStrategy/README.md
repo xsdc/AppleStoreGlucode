@@ -38,27 +38,27 @@ ConcreteStrategy:
 Implements the algorithm using the Strategy interface.
 
 ```swift
-struct ApplePayPaymentStrategy: PaymentStrategy {
+class ApplePayPaymentStrategy: PaymentStrategy {
     let appleId: String
 
-    func pay(amount: Double) async -> Result<String, Error> {
-        return .success(true)
+    func pay(amount: Double) {
+        // Process Apple Pay payment
     }
 }
 
-struct CreditCardPaymentStrategy: PaymentStrategy {
+class CreditCardPaymentStrategy: PaymentStrategy {
     let creditCardNumber: Int
 
-    func pay(amount: Double) async -> Result<String, Error> {
-        return .success(true)
+    func pay(amount: Double) {
+        // Process credit card
     }
 }
 
-struct GiftCardPaymentStrategy: PaymentStrategy {
+class GiftCardPaymentStrategy: PaymentStrategy {
     let giftCard: String
 
-    func pay(amount: Double) async -> Result<String, Error> {
-        return .success(true)
+    func pay(amount: Double) {
+        // Process gift card
     }
 }
 ```
@@ -73,10 +73,8 @@ Context:
 struct Checkout {
     var paymentStrategy: PaymentStrategy
 
-    func processPayment(amount: Double) async -> Result<String, Error> {
-        let result = await selectedPaymentStrategy.pay(amount: amount)
-
-        return result
+    func processPayment(amount: Double) {
+        paymentStrategy.pay(amount: amount)
     }
 }
 ```

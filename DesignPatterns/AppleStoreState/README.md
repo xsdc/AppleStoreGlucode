@@ -28,12 +28,18 @@ Context:
 - Maintains an instance of a ConcreteState subclass that defines the current state.
 
 ```swift
-struct Order {
+class Order {
     let id: String
     let notificationService: NotificationService
     var orderState: OrderState
 
-    mutating func update(state: OrderState) {
+    init(id: String, notificationService: NotificationService) {
+        self.id = id
+        self.notificationService = notificationService
+        self.orderState = PendingOrderState()
+    }
+
+    func update(state: OrderState) {
         orderState = state
     }
 }
@@ -45,8 +51,8 @@ Defines an interface for encapsulating the behavior associated with a particular
 
 ```swift
 protocol OrderState {
-    mutating func shipOrder()
-    mutating func cancelOrder()
+    func shipOrder()
+    func cancelOrder()
 }
 ```
 
@@ -55,36 +61,36 @@ ConcreteState subclasses:
 Each subclass implements a behavior associated with a state of the Context.
 
 ```swift
-struct PendingOrderState: OrderState {
-    mutating func shipOrder(order: Order) {
+class PendingOrderState: OrderState {
+    func shipOrder(order: Order) {
         order.notificationService.sendMessage("Order #\(order.id) has been shipped.")
         order.update(state: ShippedOrderState(order: order))
     }
 
-    mutating func cancelOrder(order: Order) {
+    func cancelOrder(order: Order) {
         order.notificationService.sendMessage("Order #\(order.id) has been cancelled.")
         order.update(state: CancelledOrderState(order: order))
     }
 }
 
-struct ShippedOrderState: OrderState {
-    mutating func shipOrder(order: Order) {
+class ShippedOrderState: OrderState {
+    func shipOrder(order: Order) {
         order.notificationService.sendMessage("Order #\(order.id) is already on the way.")
     }
 
-    mutating func cancelOrder(order: Order) {
+    func cancelOrder(order: Order) {
         order.notificationService.sendMessage("Order #\(order.id) has been cancelled, and will return to Apple.")
         order.update(state: CancelledOrderState(order: order))
     }
 }
 
-struct CancelledOrderState: OrderState {
-    mutating func shipOrder(order: Order) {
+class CancelledOrderState: OrderState {
+    func shipOrder(order: Order) {
         order.notificationService.sendMessage("Order #\(order.id) has been shipped.")
         order.update(state: ShippedOrderState(order: order))
     }
 
-    mutating func cancelOrder(order: Order) {
+    func cancelOrder(order: Order) {
         order.notificationService.sendMessage("Order #\(order.id) has already been cancelled.")
     }
 }
