@@ -8,87 +8,40 @@
 >
 > _Reference: Design Patterns: Elements of Reusable Object-Oriented Software_
 
-## Overview
+## Pattern overview
 
 - The Strategy pattern is used when you want to define a set of behaviors and make them interchangeable.
 - For example, consider a `SortingStrategy` protocol that defines a `sort` method. You can have multiple implementations of this protocol, such as `BubbleSort`, `QuickSort`, and `MergeSort`, each with its own sorting algorithm.
--	This pattern promotes flexibility and reusability by allowing clients to choose the appropriate behavior.
+-	This pattern promotes flexibility and reusability by allowing the behavior to be selected according to a common interface.
 
-## Definitions
+## Problem statement
 
-#### Context: The object that uses the strategy
+- Consider a payment processing system where users can pay using different methods such as Apple Pay, credit card, or gift card.
+- Each payment method has its own implementation and logic.
+- How can we design a system that allows users to select a payment method and process payments accordingly?
 
-```swift
-struct Context {
-    var strategy: Strategy
+## Domain application
 
-    func executeStrategy() {
-        strategy.execute()
-    }
-}
-```
+Strategy:
 
-#### Strategy: A protocol that defines the interface for the different strategies
-
-```swift
-protocol Strategy {
-    func execute()
-}
-```
-
-#### Concrete Strategies: Specific implementations of the strategy interface
-
-```swift
-struct ConcreteStrategyA: Strategy {
-    func execute() {
-        print("Concrete Strategy A")
-    }
-}
-
-struct ConcreteStrategyB: Strategy {
-    func execute() {
-        print("Concrete Strategy B")
-    }
-}
-```
-
-## Apple Store application
-
-For the Apple Store, we can use the Strategy pattern to implement different payment strategies. The `PaymentStrategy` protocol defines the interface for the payment strategies, and the `Checkout` struct uses the selected payment strategy to process payments.
-
-#### Context
-
-```swift
-struct Checkout {
-    var selectedPaymentStrategy: PaymentStrategy
-
-    mutating func updatePaymentStrategy(_ paymentStrategy: PaymentStrategy) {
-        selectedPaymentStrategy = paymentStrategy
-    }
-
-    func processPayment(amount: Double) async -> Result<Bool, Error> {
-        let result = await selectedPaymentStrategy.pay(amount: amount)
-
-        return result
-    }
-}
-```
-
-#### Strategy
+- Declares an interface common to all supported algorithms.
+- Context uses this interface to call the algorithm defined by a ConcreteStrategy.
 
 ```swift
 protocol PaymentStrategy {
-    func pay(amount: Double) async -> Result<Bool, Error>
+    func pay(amount: Double) async -> Result<String, Error>
 }
 ```
 
-#### Concrete Strategies
+ConcreteStrategy:
+
+Implements the algorithm using the Strategy interface.
 
 ```swift
 struct ApplePayPaymentStrategy: PaymentStrategy {
     let appleId: String
 
-    func pay(amount: Double) async -> Result<Bool, Error> {
+    func pay(amount: Double) async -> Result<String, Error> {
         return .success(true)
     }
 }
@@ -96,7 +49,7 @@ struct ApplePayPaymentStrategy: PaymentStrategy {
 struct CreditCardPaymentStrategy: PaymentStrategy {
     let creditCardNumber: Int
 
-    func pay(amount: Double) async -> Result<Bool, Error> {
+    func pay(amount: Double) async -> Result<String, Error> {
         return .success(true)
     }
 }
@@ -104,25 +57,26 @@ struct CreditCardPaymentStrategy: PaymentStrategy {
 struct GiftCardPaymentStrategy: PaymentStrategy {
     let giftCard: String
 
-    func pay(amount: Double) async -> Result<Bool, Error> {
+    func pay(amount: Double) async -> Result<String, Error> {
         return .success(true)
     }
 }
 ```
 
-In the context of a payment processing system, the Strategy pattern allows for different payment methods to be implemented and used interchangeably. The Checkout struct represents the context that utilizes the selected payment strategy.
+Context:
 
-### Usage
+- Is configured with a ConcreteStrategy object.
+- Maintains a reference to a Strategy object.
+- May define an interface that lets Strategy access its data.
 
 ```swift
-var checkout = Checkout(selectedPaymentStrategy: ApplePayPaymentStrategy(appleId: "user@icloud.com"))
+struct Checkout {
+    var paymentStrategy: PaymentStrategy
 
-// Process payment with Apple Pay
-let applePayResult = await checkout.processPayment(amount: 100.0)
+    func processPayment(amount: Double) async -> Result<String, Error> {
+        let result = await selectedPaymentStrategy.pay(amount: amount)
 
-// Update the payment strategy to credit card
-checkout.updatePaymentStrategy(CreditCardPaymentStrategy(creditCardNumber: 1234567890))
-
-// Process payment with credit card
-let creditCardResult = await checkout.processPayment(amount: 150.0)
+        return result
+    }
+}
 ```

@@ -8,6 +8,8 @@
 >
 > _Reference: Design Patterns: Elements of Reusable Object-Oriented Software_
 
-## Elements
+## Pattern overview
 
-## Apple Store application
+## Problem statement
+
+## Domain application
