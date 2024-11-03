@@ -8,7 +8,7 @@
 
 ## Pattern overview
 
-- The Template Method pattern is a behavioral design pattern that defines the skeleton of an algorithm in an operation, deferring some steps to subclasses.
+- The Template Method pattern is a pattern that defines the skeleton of an algorithm in an operation, deferring some steps to subclasses.
 - For example, consider an onboarding process that consists of multiple steps, such as creating an account, setting up a profile, and selecting preferences.
 - The onboarding process can be implemented using the Template Method pattern by defining a template method that calls a series of steps to complete the onboarding process.
 - The steps can be overridden by subclasses to customize the onboarding process based on the user's preferences.
@@ -28,7 +28,7 @@ AbstractClass:
 - The template method calls primitive operations as well as operations defined in AbstractClass or those of other objects.
 
 ```swift
-protocol AppleWatchStudioTemplate {
+protocol AppleWatchConfiguration {
     func templateMethod()
 
     func selectWatchCaseSize()
@@ -38,7 +38,7 @@ protocol AppleWatchStudioTemplate {
     func selectWatchEngraving()
 }
 
-extension AppleWatchStudioTemplate {
+extension AppleWatchConfiguration {
     func templateMethod() {
         selectWatchCaseSize()
         selectWatchCaseMaterial()
@@ -74,7 +74,17 @@ ConcreteClass:
 Implements the primitive operations to carry out subclass-specific steps of the algorithm.
 
 ```swift
-class HermèsSeriesAppleWatchStudioTemplate: AppleWatchStudioTemplate {
+class Series10AppleWatchConfiguration: AppleWatchConfiguration {
+    func templateMethod() {
+        selectWatchCaseSize()
+        selectWatchCaseMaterial()
+        selectWatchBand()
+        selectWatchBandSize()
+        selectWatchEngraving()
+    }
+}
+
+class HermèsSeries10AppleWatchConfiguration: AppleWatchConfiguration {
     func templateMethod() {
         selectWatchCaseSize()
         selectWatchCaseMaterial()

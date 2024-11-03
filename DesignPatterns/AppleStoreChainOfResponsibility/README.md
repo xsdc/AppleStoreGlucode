@@ -28,7 +28,7 @@ Handler:
 - Implements the successor link. (Optional)
 
 ```swift
-public protocol Handler {
+protocol Handler {
     var nextHandler: (any Handler)? { get set }
     func handle(request: Request) async -> Result<Bool, Error>
 }
@@ -41,16 +41,16 @@ ConcreteHandler:
 - If the ConcreteHandler can handle the request, it does so; otherwise it forwards the request to its successor.
 
 ```swift
-public class InventoryCheckHandler: Handler {
-    public var inventoryService: InventoryService
-    public var nextHandler: (any Handler)?
+class InventoryCheckHandler: Handler {
+    var inventoryService: InventoryService
+    var nextHandler: (any Handler)?
 
-    public init(inventoryService: InventoryService, nextHandler: (any Handler)?) {
+    init(inventoryService: InventoryService, nextHandler: (any Handler)?) {
         self.inventoryService = inventoryService
         self.nextHandler = nextHandler
     }
 
-    public func handle(request: Request) async -> Result<Bool, Error> {
+    func handle(request: Request) async -> Result<Bool, Error> {
         if request.isPreorder {
             // No inventory check required for preordered items
             return await nextHandler?.handle(request: request) ?? .success(true)
@@ -70,16 +70,16 @@ public class InventoryCheckHandler: Handler {
 ```
 
 ```swift
-public class AuthenticationHandler: Handler {
-    public var authenticationService: AuthenticationService
-    public var nextHandler: (any Handler)?
+class AuthenticationHandler: Handler {
+    var authenticationService: AuthenticationService
+    var nextHandler: (any Handler)?
 
-    public init(authenticationService: AuthenticationService, nextHandler: (any Handler)?) {
+    init(authenticationService: AuthenticationService, nextHandler: (any Handler)?) {
         self.authenticationService = authenticationService
         self.nextHandler = nextHandler
     }
 
-    public func handle(request: Request) async -> Result<Bool, Error> {
+    func handle(request: Request) async -> Result<Bool, Error> {
         let result = await authenticationService.checkIfSessionIsValid()
 
         switch result {
@@ -97,14 +97,14 @@ Client:
 Initiates the request to a ConcreteHandler object on the chain.
 
 ```swift
-public struct BagService {
+class BagService {
     let handler: Handler
 
-    public init(handler: Handler) {
+    init(handler: Handler) {
         self.handler = handler
     }
 
-    public func addProductToBag(productId: String, isPreorder: Bool, isAuthenticated: Bool) async -> Result<Bool, Error> {
+    func addProductToBag(productId: String, isPreorder: Bool, isAuthenticated: Bool) async -> Result<Bool, Error> {
         let request = Request(productId: productId, isPreorder: isPreorder, isAuthenticated: isAuthenticated)
         return await handler.handle(request: request)
     }

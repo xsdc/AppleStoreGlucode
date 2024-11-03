@@ -42,8 +42,12 @@ Refined Abstraction:
 Extends the interface defined by the Abstraction.
 
 ```swift
-struct Checkout: PaymentBridge {
+class Checkout: PaymentBridge {
     let paymentProvider: PaymentProvider
+
+    init(paymentProvider: PaymentProvider) {
+        self.paymentProvider = paymentProvider
+    }
 
     func processPayment(amount: Double) async -> Result<String, Error> {
         let result = await paymentProvider.processPayment(amount: amount)
@@ -79,13 +83,13 @@ Concrete Implementor:
 Implements the Implementor interface and defines its concrete implementation.
 
 ````swift
-struct ApplePayPaymentProvider: PaymentProvider {
+class ApplePayPaymentProvider: PaymentProvider {
     func processPayment(amount: Double) async -> Result<String, Error> {
         return .success("Apple Pay payment succeeded.")
     }
 }
 
-struct VisaPaymentProvider: PaymentProvider {
+class CreditCardPaymentProvider: PaymentProvider {
     func processPayment(amount: Double) async -> Result<String, Error> {
         return .success("Visa payment succeeded.")
     }
