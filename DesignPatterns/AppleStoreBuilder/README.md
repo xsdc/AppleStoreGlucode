@@ -42,7 +42,7 @@ ConcreteBuilder:
 - Provides an interface for retrieving the product.
 
 ```swift
-struct CheckoutOrderBuilder: OrderBuilder {
+class CheckoutOrderBuilder: OrderBuilder {
     private var order = Order()
 
     func setProduct(product: Product) {
@@ -72,7 +72,7 @@ Director:
 Constructs an object using the Builder interface.
 
 ```swift
-struct OrderDirector {
+class OrderDirector {
     let builder: OrderBuilder
 
     func construct() -> Order {

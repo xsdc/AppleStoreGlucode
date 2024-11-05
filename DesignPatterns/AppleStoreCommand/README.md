@@ -38,7 +38,7 @@ ConcreteCommand:
 - Implements Execute by invoking the corresponding operation(s) on Receiver.
 
 ```swift
-struct NextImageCommand: Command {
+class NextImageCommand: ImageCommand {
     let receiver: ImageCarousel
 
     func execute() {
@@ -52,7 +52,7 @@ Client:
 Creates a ConcreteCommand object and sets its receiver.
 
 ```swift
-struct ImageCarousel {
+class ImageCarousel {
     var images: [String]
     var currentIndex: Int
 
@@ -67,7 +67,7 @@ Invoker:
 Asks the command to carry out the request.
 
 ```swift
-struct Navigation {
+class Navigation {
     var command: Command
 
     func navigate() {
@@ -82,5 +82,12 @@ Receiver:
 - Any class may serve as a Receiver.
 
 ```swift
-let carousel = ImageCarousel(images: ["image1", "image2", "image3"], currentIndex: 0)
+class ImageReceiver {
+    var images: [String]
+    var currentIndex: Int
+
+    func nextImage() {
+        currentIndex = (currentIndex + 1) % images.count
+    }
+}
 ```
