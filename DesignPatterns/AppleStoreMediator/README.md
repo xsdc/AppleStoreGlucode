@@ -14,7 +14,7 @@
 - It promotes loose coupling by keeping objects from referring to each other explicitly, and it lets you vary their interaction independently.
 - For example, in a messaging application, the mediator object can manager the list of users and their messages.
 
-## Problem overview
+## Problem statement
 
 - On a product page, we would like to keep the product price summary in sync with the product configuration.
 - The product configuration can be updated by the user, and the product price summary should be updated accordingly.
