@@ -20,7 +20,6 @@ See the spreadsheet for an overview of how each element of each design pattern i
 - [Decorator](https://github.com/shaun-culver/AppleStore/blob/main/DesignPatterns/AppleStoreDecorator/README.md)
 - [Facade](https://github.com/shaun-culver/AppleStore/blob/main/DesignPatterns/AppleStoreFacade/README.md)
 - [Factory Method](https://github.com/shaun-culver/AppleStore/blob/main/DesignPatterns/AppleStoreFactoryMethod/README.md)
-- [Flyweight](https://github.com/shaun-culver/AppleStore/blob/main/DesignPatterns/AppleStoreFlyweight/README.md)
 - [Iterator](https://github.com/shaun-culver/AppleStore/blob/main/DesignPatterns/AppleStoreIterator/README.md)
 - [Mediator](https://github.com/shaun-culver/AppleStore/blob/main/DesignPatterns/AppleStoreMediator/README.md)
 - [Memento](https://github.com/shaun-culver/AppleStore/blob/main/DesignPatterns/AppleStoreMemento/README.md)
