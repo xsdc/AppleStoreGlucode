@@ -16,6 +16,8 @@
 
 ## Problem statement
 
+>>> RB: the problem isn't that the SERVICES are incompatible with each other. Services don't talk to each other. Rather there is likely a repo which needs to consume data from different services, and since each service returns different data types we need to adapt those responses into a unified API which the repo can consume.
+
 - The Apple Store may have multiple product recommendation engines, each with their own service.
 - These services are not compatible with each other.
 - To simplify this, we'll use the Adapter pattern to create a common interface.
@@ -35,15 +37,22 @@ struct Product {
 
 Client:
 
+>>> RB: Why is the client a service?? In all your above explanations services are the things with incompatible API's. Call this the RecommendationsRepo. 
+
 Collaborates with objects conforming to the Target interface.
 
 ```swift
 class RecommendationsService {
     func getRecommendations(engine: RecommendationEngineAdapter) -> [Product] {
+    
+    // >>> RB: a) your method signature doesn't alignw with Swift API guidelines. It should be recommendations(from recommendationEngineAdapter: RecommendationEngineAdapter) -> [Product]
+    // >>> RB: b) you call `recommendationEngine` but your parameter name is `engine`. 
         return recommendationEngine.getRecommendations()
     }
 }
 ```
+// RB >>> This doesn't make sense. "Defines an existing interface": in what sense is it "an existing interface" given that you are defining it? And in what sense does it "need adapting"? Do you mean: "Defines an interface that ensures objects which conform to it expose a consistent API for consumers"?
+// RB >>> Is "Adaptee" taken from docs somewhere? Adaptee seems to me to be a concrete object which needs to be adapted. And I woudld imagine the Adapter is the interface itself.  
 
 Adaptee:
 
@@ -59,6 +68,7 @@ Adapter:
 
 Adapts the interface of Adaptee to the Target interface.
 
+// RB: >>> Zero access control on this class. The getRecommendations method should be the only public method. It is super important that example code is of the highest quality. 
 ```swift
 class MachineLearningRecommendationEngine: RecommendationEngineAdapter {
     struct MachineLearningServiceProduct {
