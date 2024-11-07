@@ -22,7 +22,7 @@
 
 ## Domain application
 
-### Target:
+#### Target:
 
 Defines the domain-specific interface that Client uses.
 
@@ -33,7 +33,7 @@ struct Product {
 }
 ```
 
-### Client:
+#### Client:
 
 Collaborates with objects conforming to the Target interface.
 
@@ -45,7 +45,7 @@ class RecommendationsService {
 }
 ```
 
-### Adaptee:
+#### Adaptee:
 
 Defines an existing interface that needs adapting.
 
@@ -55,7 +55,7 @@ protocol RecommendationEngineAdapter {
 }
 ```
 
-### Adapter:
+#### Adapter:
 
 Adapts the interface of Adaptee to the Target interface.
 
