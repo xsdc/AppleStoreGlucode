@@ -10,19 +10,19 @@
 
 ## Pattern overview
 
-- The Adapter pattern is a structural pattern that allows objects with incompatible interfaces to collaborate.
+- The Adapter pattern allows objects with incompatible interfaces to collaborate.
 - For example, for a weather application that uses multiple third-party services, each service may have a different interface.
 - The pattern can be used to create a common interface for all services to interact with the services in a consistent manner.
 
 ## Problem statement
 
 - The Apple Store may have multiple product recommendation engines, each with their own service.
-- These services are not compatible with each other.
-- To simplify this, we'll use the Adapter pattern to create a common interface.
+- The data types returned from these services are not compatible with each other.
+- To simplify this, we'll use the Adapter pattern to constrain these types to a unified interface.
 
 ## Domain application
 
-Target:
+### Target:
 
 Defines the domain-specific interface that Client uses.
 
@@ -33,7 +33,7 @@ struct Product {
 }
 ```
 
-Client:
+### Client:
 
 Collaborates with objects conforming to the Target interface.
 
@@ -45,7 +45,7 @@ class RecommendationsService {
 }
 ```
 
-Adaptee:
+### Adaptee:
 
 Defines an existing interface that needs adapting.
 
@@ -55,7 +55,7 @@ protocol RecommendationEngineAdapter {
 }
 ```
 
-Adapter:
+### Adapter:
 
 Adapts the interface of Adaptee to the Target interface.
 
