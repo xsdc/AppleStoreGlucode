@@ -8,7 +8,6 @@ import AppleStoreCommand
 import AppleStoreComposite
 import AppleStoreDecorator
 import AppleStoreFacade
-import AppleStoreFactory
 import AppleStoreIterator
 import AppleStoreMediator
 import AppleStoreMemento
@@ -27,9 +26,6 @@ struct AppleStoreList: View {
             Section(header: Text("Creational")) {
                 NavigationLink(destination: AppleStoreBuilderView()) {
                     Text("Builder")
-                }
-                NavigationLink(destination: AppleStoreFactoryView()) {
-                    Text("Factory")
                 }
                 NavigationLink(destination: AppleStorePrototypeView()) {
                     Text("Prototype")

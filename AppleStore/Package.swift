@@ -24,6 +24,7 @@ let package = Package(
 )
 
 package.dependencies = [
+    .package(path: "../DesignPatterns/AppleStoreAbstractFactory"),
     .package(path: "../DesignPatterns/AppleStoreAdapter"),
     .package(path: "../DesignPatterns/AppleStoreBridge"),
     .package(path: "../DesignPatterns/AppleStoreBuilder"),
@@ -32,7 +33,7 @@ package.dependencies = [
     .package(path: "../DesignPatterns/AppleStoreComposite"),
     .package(path: "../DesignPatterns/AppleStoreDecorator"),
     .package(path: "../DesignPatterns/AppleStoreFacade"),
-    .package(path: "../DesignPatterns/AppleStoreFactory"),
+    .package(path: "../DesignPatterns/AppleStoreFactoryMethod"),
     .package(path: "../DesignPatterns/AppleStoreIterator"),
     .package(path: "../DesignPatterns/AppleStoreMediator"),
     .package(path: "../DesignPatterns/AppleStoreMemento"),
@@ -50,6 +51,7 @@ package.dependencies = [
 package.targets = [
     .target(name: "AppleStore",
         dependencies: [
+            .product(name: "AppleStoreAbstractFactory", package: "AppleStoreAbstractFactory"),
             .product(name: "AppleStoreAdapter", package: "AppleStoreAdapter"),
             .product(name: "AppleStoreBridge", package: "AppleStoreBridge"),
             .product(name: "AppleStoreBuilder", package: "AppleStoreBuilder"),
@@ -58,7 +60,7 @@ package.targets = [
             .product(name: "AppleStoreComposite", package: "AppleStoreComposite"),
             .product(name: "AppleStoreDecorator", package: "AppleStoreDecorator"),
             .product(name: "AppleStoreFacade", package: "AppleStoreFacade"),
-            .product(name: "AppleStoreFactory", package: "AppleStoreFactory"),
+            .product(name: "AppleStoreFactoryMethod", package: "AppleStoreFactoryMethod"),
             .product(name: "AppleStoreIterator", package: "AppleStoreIterator"),
             .product(name: "AppleStoreMediator", package: "AppleStoreMediator"),
             .product(name: "AppleStoreMemento", package: "AppleStoreMemento"),

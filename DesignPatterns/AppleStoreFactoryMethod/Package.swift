@@ -3,22 +3,22 @@
 import PackageDescription
 
 let package = Package(
-    name: "AppleStoreFactory",
+    name: "AppleStoreFactoryMethod",
     platforms: [
         .macOS(.v14),
         .iOS(.v17)
     ],
     products: [
         .library(
-            name: "AppleStoreFactory",
-            targets: ["AppleStoreFactory"]),
+            name: "AppleStoreFactoryMethod",
+            targets: ["AppleStoreFactoryMethod"]),
     ],
     targets: [
         .target(
-            name: "AppleStoreFactory"),
+            name: "AppleStoreFactoryMethod"),
         .testTarget(
-            name: "AppleStoreFactoryTests",
-            dependencies: ["AppleStoreFactory"]
+            name: "AppleStoreFactoryMethodTests",
+            dependencies: ["AppleStoreFactoryMethod"]
         ),
     ]
 )

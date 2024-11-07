@@ -10,15 +10,15 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "AppleStoreFactory",
-            targets: ["AppleStoreFactory"]),
+            name: "AppleStoreAbstractFactory",
+            targets: ["AppleStoreAbstractFactory"]),
     ],
     targets: [
         .target(
-            name: "AppleStoreFactory"),
+            name: "AppleStoreAbstractFactory"),
         .testTarget(
-            name: "AppleStoreFactoryTests",
-            dependencies: ["AppleStoreFactory"]
+            name: "AppleStoreAbstractFactoryTests",
+            dependencies: ["AppleStoreAbstractFactory"]
         ),
     ]
 )
