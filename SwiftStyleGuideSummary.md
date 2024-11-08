@@ -1,4 +1,4 @@
-# Swift Style Guide
+# Swift Style Guide Summary
 
 > Highlights of the Swift API Design Guidelines. For all the details and examples, see:
 > https://www.swift.org/documentation/api-design-guidelines
