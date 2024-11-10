@@ -16,6 +16,7 @@
 
 ## Problem statement
 
+// RB: >>> I don't think you are capturing the problem here. You ask: "How can we design a system that allows users to select a payment method and process payments accordingly?" - very easily WITHOUT using the Strategy pattern. All I would need to do is switch on the payment type and implement the appropriate payment logic in my Checkout class. This issue here (i.e the problem) is this creates a violation of the Open Closed principle. 
 - Consider a payment processing system where users can pay using different methods such as Apple Pay, credit card, or gift card.
 - Each payment method has its own implementation and logic.
 - How can we design a system that allows users to select a payment method and process payments accordingly?
@@ -29,6 +30,7 @@ Strategy:
 
 ```swift
 protocol PaymentStrategy {
+    // RB: // this is a grammatical phrase not a prepositional phrase so should read: `payAmount(_ Double)` See Swift API Guidelines. 
     func pay(amount: Double) async -> Result<String, Error>
 }
 ```
@@ -36,6 +38,8 @@ protocol PaymentStrategy {
 ConcreteStrategy:
 
 Implements the algorithm using the Strategy interface.
+
+// RB: >>> Pop this code into an editor and you will immediately see the problem. a) Non of your concretes conform to the PaymentStrategy (they are missing a return type); b) non of them have inits (which they need), c) all of these should be Structs not classes. 
 
 ```swift
 class ApplePayPaymentStrategy: PaymentStrategy {
@@ -68,6 +72,8 @@ Context:
 - Is configured with a ConcreteStrategy object.
 - Maintains a reference to a Strategy object.
 - May define an interface that lets Strategy access its data.
+
+// RB: >>> Checkout needs an init, and paymentStrategy should be a constant. 
 
 ```swift
 struct Checkout {

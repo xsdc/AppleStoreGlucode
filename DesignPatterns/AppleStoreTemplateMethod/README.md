@@ -1,5 +1,7 @@
 ![TemplateMethod](https://github.com/user-attachments/assets/54b05943-1687-4761-8f07-5f51f6206aae)
 
+// RB: >>> I can't make head or tail of this pattern. The big issue here is you talk alot about subclassing, and then none of your examples use subclassing, but instead use protocol conformance. As such, all talk of overriding is inappropriate since you don't override anything. I suspect this pattern only really works using subclassing. You do understand the difference between composition and inheriticance, right? 
+// RB: >>> In summary this whole doc needs reworking. 
 <br />
 
 # Template Method
@@ -49,6 +51,7 @@ extension AppleWatchConfiguration {
         selectWatchEngraving()
     }
 
+// RB >>> order these methods in the order in which they are defined above.
     func selectWatchCaseMaterial() {
         print("Configure default Apple Watch case material.")
     }
@@ -78,20 +81,13 @@ Implements the primitive operations to carry out subclass-specific steps of the 
 ```swift
 class Series10AppleWatchConfiguration: AppleWatchConfiguration {
     func templateMethod() {
-        selectWatchCaseSize()
-        selectWatchCaseMaterial()
-        selectWatchBand()
-        selectWatchBandSize()
-        selectWatchEngraving()
+       
     }
 }
 
 class HermèsSeries10AppleWatchConfiguration: AppleWatchConfiguration {
     func templateMethod() {
-        selectWatchCaseSize()
-        selectWatchCaseMaterial()
-        selectWatchBand()
-        selectWatchBandSize()
+       
     }
 
     func selectWatchCaseMaterial() {
