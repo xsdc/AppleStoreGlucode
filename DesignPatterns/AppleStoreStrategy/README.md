@@ -86,7 +86,7 @@ class Checkout {
 }
 ```
 
-## Usage
+## Apple Store: Usage
 
 ```swift
 let applePayStrategy = ApplePayPaymentStrategy(appleId: "4321")
