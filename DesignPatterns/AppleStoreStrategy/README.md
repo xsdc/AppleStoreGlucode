@@ -11,70 +11,90 @@
 ## Pattern overview
 
 - The Strategy pattern is used when you want to define a set of behaviors and make them interchangeable.
-- For example, consider a `SortingStrategy` protocol that defines a `sort` method. You can have multiple implementations of this protocol, such as `BubbleSort`, `QuickSort`, and `MergeSort`, each with its own sorting algorithm.
--	This pattern promotes flexibility and reusability by allowing the behavior to be selected according to a common interface.
 
-## Problem statement
+-	By establishing a common protocol for all behaviors, you can create multiple implementations that can be swapped seamlessly.
 
-- Consider a payment processing system where users can pay using different methods such as Apple Pay, credit card, or gift card.
-- Each payment method has its own implementation and logic.
-- How can we design a system that allows users to select a payment method and process payments accordingly?
+## Illustrative example
 
-## Domain application
+- Suppose we are developing a sorting algorithm that can be used in different contexts.
 
-Strategy:
+- We define a protocol called `SortStrategy` that declares a method called `sort` that takes an array of integers and returns a sorted array.
 
-- Declares an interface common to all supported algorithms.
-- Context uses this interface to call the algorithm defined by a ConcreteStrategy.
+- We can have multiple implementations of this protocol, such as `BubbleSort`, `QuickSort`, and `MergeSort`, each with its own sorting algorithm.
+
+## Apple Store: Problem statement
+
+- We would like to support multiple payment methods, such as Apple Pay or credit cards.
+
+- Each payment method has its own payment processing logic.
+
+- The Strategy pattern will allow us to add or remove payment methods in the future without changing the existing code.
+
+## Apple Store: Application
+
+#### Strategy:
+
+Defines the unified protocol for all supported payment methods.
 
 ```swift
 protocol PaymentStrategy {
-    func pay(amount: Double) async -> Result<String, Error>
+    func pay(amount: Double)
 }
 ```
 
-ConcreteStrategy:
+#### Concrete strategy:
 
-Implements the algorithm using the Strategy interface.
+Implement the payment logic for each specific payment method.
 
 ```swift
-class ApplePayPaymentStrategy: PaymentStrategy {
+struct ApplePayPaymentStrategy: PaymentStrategy {
     let appleId: String
 
     func pay(amount: Double) {
-        // Process Apple Pay payment
+        print("Processing Apple Pay payment of R\(amount)")
     }
 }
 
-class CreditCardPaymentStrategy: PaymentStrategy {
-    let creditCardNumber: Int
+struct CreditCardPaymentStrategy: PaymentStrategy {
+    let creditCardNumber: String
 
     func pay(amount: Double) {
-        // Process credit card
-    }
-}
-
-class GiftCardPaymentStrategy: PaymentStrategy {
-    let giftCard: String
-
-    func pay(amount: Double) {
-        // Process gift card
+        print("Processing credit card payment of R\(amount)")
     }
 }
 ```
 
-Context:
+#### Context:
 
-- Is configured with a ConcreteStrategy object.
-- Maintains a reference to a Strategy object.
-- May define an interface that lets Strategy access its data.
+Holds a reference to a `PaymentStrategy` and delegates the payment processing to it.
 
 ```swift
-struct Checkout {
-    var paymentStrategy: PaymentStrategy
+class Checkout {
+    private let paymentStrategy: PaymentStrategy
+
+    init(paymentStrategy: PaymentStrategy) {
+        self.paymentStrategy = paymentStrategy
+    }
+
+    func setPaymentStrategy(_ strategy: PaymentStrategy) {
+        self.paymentStrategy = strategy
+    }
 
     func processPayment(amount: Double) {
         paymentStrategy.pay(amount: amount)
     }
 }
+```
+
+## Usage
+
+```swift
+let applePayStrategy = ApplePayPaymentStrategy(appleId: "4321")
+let creditCardStrategy = CreditCardPaymentStrategy(creditCardNumber: "1234567890")
+
+let applePayCheckout = Checkout(paymentStrategy: applePayStrategy)
+applePayCheckout.processPayment(amount: 72000.00) // Processing Apple Pay payment of R72000.00
+
+let creditCardCheckout = Checkout(paymentStrategy: creditCardStrategy)
+creditCardCheckout.processPayment(amount: 64000.00) // Processing credit card payment of R64000.00
 ```
