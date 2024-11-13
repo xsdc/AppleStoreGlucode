@@ -10,71 +10,83 @@
 
 ## Pattern overview
 
-- The Strategy pattern is used when you want to define a set of behaviors and make them interchangeable.
-- For example, consider a `SortingStrategy` protocol that defines a `sort` method. You can have multiple implementations of this protocol, such as `BubbleSort`, `QuickSort`, and `MergeSort`, each with its own sorting algorithm.
--	This pattern promotes flexibility and reusability by allowing the behavior to be selected according to a common interface.
+- The Strategy pattern is used when we want to define a set of behaviours and make them interchangeable.
+
+-	By establishing a common protocol for all behaviours, we can create multiple implementations that can be swapped seamlessly.
 
 ## Problem statement
 
-- Consider a payment processing system where users can pay using different methods such as Apple Pay, credit card, or gift card.
-- Each payment method has its own implementation and logic.
-- How can we design a system that allows users to select a payment method and process payments accordingly?
+- The Apple Store needs to support multiple payment methods.
 
-## Domain application
+- These include payment methods such as Apple Pay, Mastercard, Visa, and gift cards.
 
-Strategy:
+- In the future, we may need to add or remove payment methods and their processing logic without changing existing code.
 
-- Declares an interface common to all supported algorithms.
-- Context uses this interface to call the algorithm defined by a ConcreteStrategy.
+- We would like to avoid the situation where we have to modify existing code to accommodate changes to payment methods.
+
+- The Strategy pattern helps us achieve this by defining a common protocol for all payment methods.
+
+- Each concrete strategy will implement the payment processing logic for a specific payment method.
+
+- This allows for scalable and maintainable code that adheres to the open/closed principle, and the single responsibility principle.
+
+## Definitions
+
+#### Strategy:
+
+Defines the unified protocol for all supported payment methods.
 
 ```swift
 protocol PaymentStrategy {
-    func pay(amount: Double) async -> Result<String, Error>
+    func pay(amount: Double)
 }
 ```
 
-ConcreteStrategy:
+#### Concrete strategy:
 
-Implements the algorithm using the Strategy interface.
+Implement the payment logic for each specific payment method.
 
 ```swift
-class ApplePayPaymentStrategy: PaymentStrategy {
+struct ApplePayPaymentStrategy: PaymentStrategy {
     let appleId: String
 
     func pay(amount: Double) {
-        // Process Apple Pay payment
+        print("Processing Apple Pay payment of R\(amount)")
     }
 }
 
-class CreditCardPaymentStrategy: PaymentStrategy {
-    let creditCardNumber: Int
+struct CreditCardPaymentStrategy: PaymentStrategy {
+    let creditCardNumber: String
 
     func pay(amount: Double) {
-        // Process credit card
-    }
-}
-
-class GiftCardPaymentStrategy: PaymentStrategy {
-    let giftCard: String
-
-    func pay(amount: Double) {
-        // Process gift card
+        print("Processing credit card payment of R\(amount)")
     }
 }
 ```
 
-Context:
+#### Context:
 
-- Is configured with a ConcreteStrategy object.
-- Maintains a reference to a Strategy object.
-- May define an interface that lets Strategy access its data.
+Holds a reference to a `PaymentStrategy` and delegates the payment processing to it.
 
 ```swift
 struct Checkout {
-    var paymentStrategy: PaymentStrategy
+    let paymentStrategy: PaymentStrategy
 
     func processPayment(amount: Double) {
         paymentStrategy.pay(amount: amount)
     }
 }
+```
+
+## Application
+
+```swift
+let applePayStrategy = ApplePayPaymentStrategy(appleId: "4321")
+let creditCardStrategy = CreditCardPaymentStrategy(creditCardNumber: "1234567890")
+
+let applePayCheckout = Checkout(paymentStrategy: applePayStrategy)
+applePayCheckout.processPayment(amount: 72000.00) // Processing Apple Pay payment of R72000.00
+
+let creditCardCheckout = Checkout(paymentStrategy: creditCardStrategy)
+creditCardCheckout.processPayment(amount: 64000.00) // Processing credit card payment of R64000.00
 ```
