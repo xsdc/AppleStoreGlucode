@@ -12,23 +12,23 @@
 
 - The Strategy pattern is used when you want to define a set of behaviors and make them interchangeable.
 
--	By establishing a common protocol for all behaviors, you can create multiple implementations that can be swapped seamlessly.
-
-## Illustrative example
-
-- Suppose we are developing a sorting algorithm that can be used in different contexts.
-
-- We define a protocol called `SortStrategy` that declares a method called `sort` that takes an array of integers and returns a sorted array.
-
-- We can have multiple implementations of this protocol, such as `BubbleSort`, `QuickSort`, and `MergeSort`, each with its own sorting algorithm.
+-	By establishing a common protocol for all behaviours, you can create multiple implementations that can be swapped seamlessly.
 
 ## Apple Store: Problem statement
 
-- We would like to support multiple payment methods, such as Apple Pay or credit cards.
+- The Apple Store needs to support multiple payment methods.
 
-- Each payment method has its own payment processing logic.
+- These include payment methods such as Apple Pay, Mastercard, Visa, and gift cards.
 
-- The Strategy pattern will allow us to add or remove payment methods in the future without changing the existing code.
+- In the future, we may need to add or remove payment methods and their processing logic without changing existing code.
+
+- We would like to avoid the situation where we have to modify existing code to accommodate changes to payment methods.
+
+- The Strategy pattern helps us achieve this by defining a common protocol for all payment methods.
+
+- Each concrete strategy will implement the payment processing logic for a specific payment method.
+
+- This allows for scalable and maintainable code that adheres to the open/closed principle, and the single responsibility principle.
 
 ## Apple Store: Application
 
@@ -69,16 +69,8 @@ struct CreditCardPaymentStrategy: PaymentStrategy {
 Holds a reference to a `PaymentStrategy` and delegates the payment processing to it.
 
 ```swift
-class Checkout {
-    private let paymentStrategy: PaymentStrategy
-
-    init(paymentStrategy: PaymentStrategy) {
-        self.paymentStrategy = paymentStrategy
-    }
-
-    func setPaymentStrategy(_ strategy: PaymentStrategy) {
-        self.paymentStrategy = strategy
-    }
+struct Checkout {
+    let paymentStrategy: PaymentStrategy
 
     func processPayment(amount: Double) {
         paymentStrategy.pay(amount: amount)
