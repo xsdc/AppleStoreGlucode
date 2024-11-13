@@ -10,9 +10,9 @@
 
 ## Pattern overview
 
-- The Strategy pattern is used when you want to define a set of behaviours and make them interchangeable.
+- The Strategy pattern is used when we want to define a set of behaviours and make them interchangeable.
 
--	By establishing a common protocol for all behaviours, you can create multiple implementations that can be swapped seamlessly.
+-	By establishing a common protocol for all behaviours, we can create multiple implementations that can be swapped seamlessly.
 
 ## Problem statement
 
