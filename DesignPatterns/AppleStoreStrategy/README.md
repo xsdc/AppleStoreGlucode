@@ -10,11 +10,11 @@
 
 ## Pattern overview
 
-- The Strategy pattern is used when you want to define a set of behaviors and make them interchangeable.
+- The Strategy pattern is used when you want to define a set of behaviours and make them interchangeable.
 
 -	By establishing a common protocol for all behaviours, you can create multiple implementations that can be swapped seamlessly.
 
-## Apple Store: Problem statement
+## Problem statement
 
 - The Apple Store needs to support multiple payment methods.
 
@@ -30,7 +30,7 @@
 
 - This allows for scalable and maintainable code that adheres to the open/closed principle, and the single responsibility principle.
 
-## Apple Store: Application
+## Definitions
 
 #### Strategy:
 
@@ -78,7 +78,7 @@ struct Checkout {
 }
 ```
 
-## Apple Store: Usage
+## Application
 
 ```swift
 let applePayStrategy = ApplePayPaymentStrategy(appleId: "4321")
