@@ -136,7 +136,7 @@ class WebSocketBagNotifier: BagNotifier {
 }
 ```
 
-## Application
+## Example
 
 ```swift
 struct Product {
