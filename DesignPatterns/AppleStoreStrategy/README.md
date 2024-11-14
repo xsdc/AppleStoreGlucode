@@ -78,7 +78,7 @@ struct Checkout {
 }
 ```
 
-## Application
+## Example
 
 ```swift
 let applePayStrategy = ApplePayPaymentStrategy(appleId: "4321")
