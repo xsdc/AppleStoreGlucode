@@ -14,16 +14,6 @@
 
 - It achieves this by converting the differing data structures into a single structure that the client can use.
 
-## Illustrative example
-
-- Weather apps that use multiple third-party services can leverage the pattern to create a unified way to interact with all of them.
-
-- The major issue faced in this scenario is that the hierarchy of the requested data structures would differ.
-
-- Also, one service may return the temperature in celsius, while another may return it in fahrenheit.
-
-- Adapters resolve these differences by converting the data structures into a single, unified structure.
-
 ## Problem statement
 
 - The Apple Store may request data from multiple product recommendation engine APIs.
@@ -32,7 +22,7 @@
 
 - To simplify this, we'll use the Adapter pattern to convert the data structures into a unified `Product` structure.
 
-## Domain application
+## Definitions
 
 #### Target:
 
@@ -116,7 +106,7 @@ class RecommendationEngine {
 }
 ```
 
-## Usage
+## Application
 
 ```swift
 let adapter = MachineLearningRecommendationEngineAdapter()
