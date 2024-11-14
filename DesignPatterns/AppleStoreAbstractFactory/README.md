@@ -16,6 +16,8 @@
 
 ## Problem statement
 
+>>> RB: This problems statement doesn't specify the actual problem. If I didn't use an abstract factory what would I be forced to do, and why is that bad?
+
 - For the Apple Store, consider categories of products such as iPhones, iPads, and MacBooks.
 - Each category has different models. For iPad: iPad mini, iPad Air, iPad Pro, and iPad.
 - Each model has different configurations.
@@ -26,6 +28,8 @@
 Abstract Factory:
 
 Declares an interface for operations that create abstract product objects.
+
+>>> RB: SeriesFactory isn't used anywhere else in your code examples.
 
 ```swift
 protocol SeriesFactory {
@@ -62,6 +66,8 @@ AbstractProduct:
 
 Declares an interface for a type of product object.
 
+>>> RB: your code examples need to align with what you are demonstrating. usefulFunctionA returning a String doesn't make sense. In a real world example, what properties and methods would this protocol define? Use those instead. You can keep it barebones, but the examples need to map to real world application otherwise its confusing.  
+
 ```swift
 protocol AbstractProductA {
     func usefulFunctionA() -> String
@@ -73,6 +79,8 @@ ConcreteProduct:
 - Defines a product object to be created by the corresponding concrete factory.
 - Implements the AbstractProduct interface.
 
+>>> RB: See comment above re. usefulFunction.
+
 ```swift
 class ConcreteProductA1: AbstractProductA {
     func usefulFunctionA() -> String {
@@ -82,6 +90,8 @@ class ConcreteProductA1: AbstractProductA {
 ```
 
 Client:
+
+>>> RB: AbstractFactory and AbstractProduct classes don't define interfaces. So what do you mean below exactly? 
 
 Uses only interfaces declared by AbstractFactory and AbstractProduct classes.
 
@@ -101,3 +111,5 @@ class Client {
     }
 }
 ```
+
+>>> RB: Overall I was able to grasp the concept with 80% clarity. 
