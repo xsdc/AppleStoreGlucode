@@ -10,7 +10,7 @@
 
 ## Pattern overview
 
-- The Singleton pattern ensures that only one object of a particular class is ever created.
+- The Singleton pattern ensures that only one instance of a particular class is ever created.
 
 - This can be leveraged to provide efficient resource management.
 
