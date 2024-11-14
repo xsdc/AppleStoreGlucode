@@ -52,7 +52,7 @@ protocol BagObserver: AnyObject {
 
 - Implements the `bagUpdatedWithProducts` to update its state when the subject notifies it.
 
-- In the example, we attach the observer to the subject in the initializer, and detach it in the deinitializer.
+- We attach the observer to the subject in the initializer, and detach it in the deinitializer.
 
 ```swift
 class BagListViewModel: BagObserver {
