@@ -43,7 +43,7 @@
 - We implement the equivalent of abstract classes in Swift by defining a protocol, then providing default implementations for the methods in an extension.
 
 ```swift
-protocol AppleWatchConfiguration {
+protocol AppleWatchConfigurationTemplate {
     func process()
 
     func mapDataForWatchCaseSize()
@@ -53,7 +53,7 @@ protocol AppleWatchConfiguration {
     func mapDataForWatchEngraving()
 }
 
-extension AppleWatchConfiguration {
+extension AppleWatchConfigurationTemplate {
     func process() {
         mapDataForWatchCaseSize()
         mapDataForWatchCaseMaterial()
@@ -97,7 +97,7 @@ extension AppleWatchConfiguration {
 - For simplicity, the data mapping implementations are omitted.
 
 ```swift
-class Series10AppleWatchConfiguration: AppleWatchConfiguration {
+class Series10AppleWatchConfiguration: AppleWatchConfigurationTemplate {
     func process() {
         mapDataForWatchCaseSize()
         mapDataForWatchCaseMaterial()
@@ -107,7 +107,7 @@ class Series10AppleWatchConfiguration: AppleWatchConfiguration {
     }
 }
 
-class HermèsSeries10AppleWatchConfiguration: AppleWatchConfiguration {
+class HermèsSeries10AppleWatchConfiguration: AppleWatchConfigurationTemplate {
     func process() {
         mapDataForWatchCaseSize()
         mapDataForWatchCaseMaterial()
