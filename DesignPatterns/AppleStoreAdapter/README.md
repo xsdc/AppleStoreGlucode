@@ -106,7 +106,7 @@ class RecommendationEngine {
 }
 ```
 
-## Application
+## Example
 
 ```swift
 let adapter = MachineLearningRecommendationEngineAdapter()
