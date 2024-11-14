@@ -137,7 +137,7 @@ class HermèsSeries10AppleWatchConfiguration: AppleWatchConfigurationTemplate {
 }
 ```
 
-## Application
+## Example
 
 ```swift
 let series10AppleWatchConfiguration = Series10AppleWatchConfiguration()
