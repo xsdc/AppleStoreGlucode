@@ -113,7 +113,7 @@ class EmployeeDiscountVisitor: DiscountVisitor {
 }
 ```
 
-## Application
+## Example
 
 ```swift
 // Education discount for MacBook Pro
