@@ -1,4 +1,4 @@
-![5thAvenueNewYorkAppleStore](https://github.com/user-attachments/assets/386bae20-b662-470b-97a1-83b7ee367dfc)
+![Composite](https://github.com/user-attachments/assets/fd7e8458-74a1-4a9a-9fde-fd9ef404c1e9)
 
 <br />
 
@@ -10,90 +10,133 @@
 
 ## Pattern overview
 
-- Often, applications have a hierarchical tree structures where individual items (leaves) and groups of items (composites) coexist.
-- For example, a file system includes files and directories, with directories able to contain both files and other directories.
-- The Composite design pattern solves this issue by creating a shared interface, called the component interface, that allows clients to interact with both individual items and groups of items in a consistent manner.
-- For instance, deleting a file or directory from a file system should be as simple as calling a single method, regardless of whether the item is a file or a directory.
+- The Composite pattern allows us to build tree structures that treat individual objects and object groups uniformly.
+
+- This can be compared to a file system, where a directory can contain files (individual objects) and other directories (object groups).
 
 ## Problem statement
 
-- We would like to build up a catalog of items, with products and categories.
-- We want to be able to log analytics events when users interact with items in the catalog, whether they are products or categories.
+- Let's assume the Apple Store has an app that allows employees to administer the catalog of products.
 
-## Domain application
+- The catalog contains categories, that may be nested, and products that belong to these categories.
 
-Component:
+- When an employee navigates the catalog, they should be able to view the breadcrumbs, whether they are looking at a category or a product.
 
-- Declares the interface for objects in the composition.
-- Implements default behavior for the interface common to all classes, as appropriate.
-- Declares an interface for accessing and managing its child components.
-- Defines an interface for accessing a component's parent in the recursive structure, and implements it if that's appropriate. (Optional)
+- We can use the Composite pattern to add a requirement that each category and product should be able to display its own breadcrumbs.
+
+## Definitions
+
+- When an employee navigates the catalog, they should be able to view the breadcrumbs, whether they are looking at a category or a product.
+
+- We can use the Composite pattern to add a requirement that each category and product should be able to display its own breadcrumbs.
+
+- Applying the patterns helps us maintain a consistent interface for both categories and products.
+
+- We are guaranteed that we can always call the `generateBreadcrumbs()` method on any object in the catalog.
+
+## Definitions
+
+#### Component:
+
+The shared protocol for products and categories.
 
 ```swift
-protocol CatalogItem: Hashable {
-    var id: String { get }
-    var name: String { get }
-    func analyticsEvent() -> String
+protocol CatalogItem: AnyObject {
+    func generateBreadcrumbs() -> [String]
 }
 ```
 
-Leaf:
+#### Composite:
 
-- Represents leaf objects in the composition.
-- A leaf has no children.
-- Defines behavior for primitive objects in the composition.
+- Composite nodes can contain leaf nodes and other composite nodes.
 
-```swift
-class CatalogProduct: CatalogItem {
-    let id: String
-    let name: String
-    let description: String
-    let price: Double
+- Categories are the composite nodes in the catalog tree structure.
 
-    func analyticsEvent() -> String {
-        return "catalog-product-" + id
-    }
-}
-```
-
-Composite:
-
-- Defines behavior for components having children.
-- Stores child components.
-- Implements child-related operations in the Component interface.
+- They can contain other categories and products.
 
 ```swift
 class CatalogCategory: CatalogItem {
-    let id: String
-    let name: String
-    var children: [any CatalogItem] = []
+    private let name: String
 
-    func analyticsEvent() -> String {
-        return "catalog-category-" + id
+    init(name: String) {
+        self.name = name
     }
+
+    private var children: [any CatalogItem] = []
+    private var parent: CatalogCategory?
 
     func addItem(_ item: any CatalogItem) {
         children.append(item)
+
+        if let category = item as? CatalogCategory {
+            category.parent = self
+        }
+        else if let product = item as? CatalogProduct {
+            product.parent = self
+        }
     }
 
-    func removeItem(_ item: any CatalogItem) {
-        if let index = children.firstIndex(where: { $0.id == item.id }) {
-            children.remove(at: index)
+    func generateBreadcrumbs() -> [String] {
+        if let parent = parent {
+            return parent.generateBreadcrumbs() + [name]
+        }
+        else {
+            return [name]
+        }
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+
+    static func == (lhs: CatalogCategory, rhs: CatalogCategory) -> Bool {
+        return lhs.id == rhs.id
+    }
+}
+```
+
+#### Leaf:
+
+- Leaf nodes do not have children.
+
+- Products are the leaf nodes in the catalog tree structure.
+
+```swift
+class CatalogProduct: CatalogItem {
+    private let name: String
+    private let price: Double
+
+    init(name: String, price: Double) {
+        self.name = name
+        self.price = price
+    }
+
+    public var parent: CatalogCategory?
+
+    func generateBreadcrumbs() -> [String] {
+        if let parent = parent {
+            return parent.generateBreadcrumbs() + [name]
+        }
+        else {
+            return [name]
         }
     }
 }
 ```
 
-Client:
-
-Manipulates objects in the composition through the Component interface.
+## Example
 
 ```swift
-class Catalog {
-    var items: [any CatalogItem] = []
+let catalog = CatalogCategory(name: "Catalog")
+let macCategory = CatalogCategory(name: "Mac")
+let macAccessoriesCategory = CatalogCategory(name: "Mac Accessories")
+let macBookProCharger = CatalogProduct(name: "MacBook Pro Charger", price: 80)
 
-    func logAnalytics(for item: any CatalogItem) {
-        // Use item.analyticsEvent()
-    }
-}
+catalog.addItem(macCategory)
+macCategory.addItem(macAccessoriesCategory)
+macAccessoriesCategory.addItem(macBookProCharger)
+
+print(macBookProCharger.generateBreadcrumbs()) // ["Catalog", "Mac", "Mac Accessories", "MacBook Pro Charger"]
+print(macAccessoriesCategory.generateBreadcrumbs()) // ["Catalog", "Mac", "Mac Accessories"]
+print(macCategory.generateBreadcrumbs()) // ["Catalog", "Mac"]
 ```
