@@ -24,6 +24,10 @@
 
 - We can use the Composite pattern to add a requirement that each category and product should be able to display its own breadcrumbs.
 
+- Applying the patterns helps us maintain a consistent interface for both categories and products.
+
+- We are guaranteed that we can always call the `generateBreadcrumbs()` method on any object in the catalog.
+
 ## Definitions
 
 #### Component:
@@ -40,7 +44,7 @@ protocol CatalogItem: AnyObject {
 
 - Composite nodes can contain leaf nodes and other composite nodes.
 
-- Categories are the composite nodes in the tree structure.
+- Categories are the composite nodes in the catalog tree structure.
 
 - They can contain other categories and products.
 
@@ -81,7 +85,7 @@ class CatalogCategory: CatalogItem {
 
 - Leaf nodes do not have children.
 
-- Products are the leaf nodes in the tree structure.
+- Products are the leaf nodes in the catalog tree structure.
 
 ```swift
 class CatalogProduct: CatalogItem {
