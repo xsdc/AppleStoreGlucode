@@ -28,11 +28,11 @@
 
 - These include keyboard shortcuts, voice commands, and via a timer that periodically moves to the next image.
 
-- We want to avoid bundling all these modes of interaction into a single class, as this would violate the single responsibility principle.
+- We want to avoid bundling all these modes of interaction into a single class.
 
 - The Command pattern is aimed at encapsulating these modes into separate objects called invokers.
 
-- These invokers then interact with a set of commands (Next, previous, etc.), that in turn interact with a receiver (Carousel view model).
+- These invokers then interact with a set of common commands (Next, previous, etc.), that in turn interact with a receiver (Carousel view model).
 
 - This enables a clean separation of concerns and allows for the addition or removal of interaction modes in the future, conforming to the open/closed principle, and the single responsibility principle.
 
