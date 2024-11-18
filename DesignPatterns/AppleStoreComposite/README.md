@@ -24,6 +24,12 @@
 
 - We can use the Composite pattern to add a requirement that each category and product should be able to display its own breadcrumbs.
 
+## Definitions
+
+- When an employee navigates the catalog, they should be able to view the breadcrumbs, whether they are looking at a category or a product.
+
+- We can use the Composite pattern to add a requirement that each category and product should be able to display its own breadcrumbs.
+
 - Applying the patterns helps us maintain a consistent interface for both categories and products.
 
 - We are guaranteed that we can always call the `generateBreadcrumbs()` method on any object in the catalog.
@@ -77,6 +83,14 @@ class CatalogCategory: CatalogItem {
         else {
             return [name]
         }
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+
+    static func == (lhs: CatalogCategory, rhs: CatalogCategory) -> Bool {
+        return lhs.id == rhs.id
     }
 }
 ```
