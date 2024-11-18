@@ -31,9 +31,7 @@
 The shared protocol for products and categories.
 
 ```swift
-protocol CatalogItem: AnyObject, Hashable {
-    var id: String { get }
-    var name: String { get }
+protocol CatalogItem: AnyObject {
     func generateBreadcrumbs() -> [String]
 }
 ```
@@ -48,21 +46,22 @@ protocol CatalogItem: AnyObject, Hashable {
 
 ```swift
 class CatalogCategory: CatalogItem {
-    let id: String
-    let name: String
-    private(set) var children: [any CatalogItem] = []
-    weak var parent: CatalogCategory?
+    private let name: String
 
-    init(id: String, name: String) {
-        self.id = id
+    init(name: String) {
         self.name = name
     }
 
+    private var children: [any CatalogItem] = []
+    private var parent: CatalogCategory?
+
     func addItem(_ item: any CatalogItem) {
         children.append(item)
+
         if let category = item as? CatalogCategory {
             category.parent = self
-        } else if let product = item as? CatalogProduct {
+        }
+        else if let product = item as? CatalogProduct {
             product.parent = self
         }
     }
@@ -70,17 +69,10 @@ class CatalogCategory: CatalogItem {
     func generateBreadcrumbs() -> [String] {
         if let parent = parent {
             return parent.generateBreadcrumbs() + [name]
-        } else {
+        }
+        else {
             return [name]
         }
-    }
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
-
-    static func == (lhs: CatalogCategory, rhs: CatalogCategory) -> Bool {
-        return lhs.id == rhs.id
     }
 }
 ```
@@ -93,33 +85,23 @@ class CatalogCategory: CatalogItem {
 
 ```swift
 class CatalogProduct: CatalogItem {
-    let id: String
-    let name: String
-    private let description: String
+    private let name: String
     private let price: Double
-    weak var parent: CatalogCategory?
 
-    init(id: String, name: String, description: String, price: Double) {
-        self.id = id
+    init(name: String, price: Double) {
         self.name = name
-        self.description = description
         self.price = price
     }
+
+    public var parent: CatalogCategory?
 
     func generateBreadcrumbs() -> [String] {
         if let parent = parent {
             return parent.generateBreadcrumbs() + [name]
-        } else {
+        }
+        else {
             return [name]
         }
-    }
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
-
-    static func == (lhs: CatalogProduct, rhs: CatalogProduct) -> Bool {
-        return lhs.id == rhs.id
     }
 }
 ```
@@ -127,10 +109,10 @@ class CatalogProduct: CatalogItem {
 ## Example
 
 ```swift
-let catalog = CatalogCategory(id: "1", name: "Catalog")
-let macCategory = CatalogCategory(id: "3", name: "Mac")
-let macAccessoriesCategory = CatalogCategory(id: "4", name: "Mac Accessories")
-let macBookProCharger = CatalogProduct(id: "7", name: "MacBook Pro Charger", description: "A charger for the MacBook Pro", price: 80)
+let catalog = CatalogCategory(name: "Catalog")
+let macCategory = CatalogCategory(name: "Mac")
+let macAccessoriesCategory = CatalogCategory(name: "Mac Accessories")
+let macBookProCharger = CatalogProduct(name: "MacBook Pro Charger", price: 80)
 
 catalog.addItem(macCategory)
 macCategory.addItem(macAccessoriesCategory)
