@@ -10,90 +10,108 @@
 
 ## Pattern overview
 
-- The Adapter pattern is a structural pattern that allows objects with incompatible interfaces to collaborate.
-- For example, for a weather application that uses multiple third-party services, each service may have a different interface.
-- The pattern can be used to create a common interface for all services to interact with the services in a consistent manner.
+- The Adapter pattern allows related classes with incompatible data structures to be handled in a unified manner.
+
+- It achieves this by converting the differing data structures into a single structure that the client can use.
 
 ## Problem statement
 
-- The Apple Store may have multiple product recommendation engines, each with their own service.
-- These services are not compatible with each other.
-- To simplify this, we'll use the Adapter pattern to create a common interface.
+- The Apple Store may request data from multiple product recommendation engine APIs.
 
-## Domain application
+- Let's assume the data structures returned from these APIs are not compatible with each other.
 
-Target:
+- To simplify this, we'll use the Adapter pattern to convert the data structures into a unified `Product` structure.
 
-Defines the domain-specific interface that Client uses.
+## Definitions
+
+#### Target:
+
+Defines the common structure that the adapters convert to.
 
 ```swift
-struct Product {
+struct Product: Identifiable {
     let id: String
     let name: String
 }
 ```
 
-Client:
+#### Adaptee:
 
-Collaborates with objects conforming to the Target interface.
-
-```swift
-class RecommendationsService {
-    func getRecommendations(engine: RecommendationEngineAdapter) -> [Product] {
-        return recommendationEngine.getRecommendations()
-    }
-}
-```
-
-Adaptee:
-
-Defines an existing interface that needs adapting.
+Defines a protocol that adapters conform to in order to return unified `Product` structures.
 
 ```swift
 protocol RecommendationEngineAdapter {
-    func getRecommendations() -> [Product]
+    func fetchProductRecommendations() -> [Product]
 }
 ```
 
-Adapter:
+#### Adapter:
 
-Adapts the interface of Adaptee to the Target interface.
+Conforms to the Adaptee protocol to convert the incompatible data structures to the unified `Product` structure.
 
 ```swift
-class MachineLearningRecommendationEngine: RecommendationEngineAdapter {
-    struct MachineLearningServiceProduct {
+class MachineLearningRecommendationEngineAdapter: RecommendationEngineAdapter {
+    private struct MachineLearningServiceProduct {
         let machineLearningId: String
         let machineLearningName: String
     }
 
-    let machineLearningServiceProducts = [
+    private let machineLearningServiceProducts = [
         MachineLearningServiceProduct(machineLearningId: "1234", machineLearningName: "Apple Watch Ultra"),
         MachineLearningServiceProduct(machineLearningId: "4321", machineLearningName: "Vision Pro")
     ]
 
-    func getRecommendations() -> [Product] {
+    func fetchProductRecommendations() -> [Product] {
         return machineLearningServiceProducts.map { machineLearningProduct in
             Product(id: machineLearningProduct.machineLearningId, name: machineLearningProduct.machineLearningName)
         }
     }
 }
 
-class HistoryRecommendationEngine: RecommendationEngineAdapter {
-    struct HistoryServiceProduct {
+class HistoryRecommendationEngineAdapter: RecommendationEngineAdapter {
+    private struct HistoryServiceProduct {
         let historyId: String
         let historyName: String
     }
 
-    let historyServiceProducts = [
+    private let historyServiceProducts = [
         HistoryServiceProduct(historyId: "1234", historyName: "Apple Watch Ultra"),
         HistoryServiceProduct(historyId: "4321", historyName: "Vision Pro"),
         HistoryServiceProduct(historyId: "2314", historyName: "iPhone Pro")
     ]
 
-    func getRecommendations() -> [Product] {
+    func fetchProductRecommendations() -> [Product] {
         return historyServiceProducts.map { historyServiceProduct in
             Product(id: historyServiceProduct.historyId, name: historyServiceProduct.historyName)
         }
     }
 }
+```
+
+#### Client:
+
+Uses adapters to convert the various recommendation engine data structures to the common `Product` structure.
+
+```swift
+class RecommendationEngine {
+    private let adapter: RecommendationEngineAdapter
+
+    init(adapter: RecommendationEngineAdapter) {
+        self.adapter = adapter
+    }
+
+    func fetchProductRecommendations() -> [Product] {
+        return adapter.fetchProductRecommendations()
+    }
+}
+```
+
+## Example
+
+```swift
+let adapter = MachineLearningRecommendationEngineAdapter()
+let recommendationEngine = RecommendationEngine(adapter: adapter)
+let products = recommendationEngine.fetchProductRecommendations()
+
+print(products) // [Product(id: "1234", name: "Apple Watch Ultra"), Product(id: "4321", name: "Vision Pro")]
 ```
