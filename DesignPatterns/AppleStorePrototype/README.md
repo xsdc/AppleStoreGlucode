@@ -57,10 +57,10 @@ struct ConfigurationOption {
 struct iPhoneProductConfiguration: ClonableProductConfiguration {
     func cloneWithConversionRate(of conversionRate: Double) -> iPhoneProductConfiguration {
         let storageOptions = self.storageOptions.map { option in
-                    ConfigurationOption(name: option.name, price: option.price * conversionRate)
-                }
+            ConfigurationOption(name: option.name, price: option.price * conversionRate)
+        }
 
-                return iPhoneProductConfiguration(storageOptions: storageOptions)
+        return iPhoneProductConfiguration(storageOptions: storageOptions)
     }
 
     let storageOptions: [ConfigurationOption]
