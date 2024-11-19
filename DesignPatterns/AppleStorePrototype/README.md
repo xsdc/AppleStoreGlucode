@@ -12,7 +12,7 @@
 
 - The Prototype pattern allows an object to create a copy of itself.
 
-- This is typically used when the creation of an object directly is costly or complex.
+- This is typically used when the recreation of an object is costly or complex.
 
 - It may also be used to create variations of an object without the need to subclass it.
 
@@ -30,15 +30,15 @@
 
 #### Prototype:
 
-- Declares the protocol for cloning itself.
+- Declares the protocol that provides a method for cloning concrete implementations.
 
 - Typically, this protocol will have a single method called `clone()`.
 
-- In our case, we have include a parameter to demonstrate the concept of cloning with a conversion rate.
+- In our case, we have included a parameter to demonstrate the concept of cloning with a currency conversion rate.
 
 ```swift
-protocol ClonableProductConfiguration {
-    func cloneWithConversionRate(of conversionRate: Double) -> ClonableProductConfiguration
+protocol CloneableProductConfiguration {
+    func cloneWithConversionRate(of conversionRate: Double) -> Self
 }
 ```
 
@@ -55,15 +55,15 @@ struct ConfigurationOption {
 }
 
 struct iPhoneProductConfiguration: ClonableProductConfiguration {
-    let storageOptions: [ConfigurationOption]
-
-    func cloneWithConversionRate(of conversionRate: Double) -> ClonableProductConfiguration {
+    func cloneWithConversionRate(of conversionRate: Double) -> iPhoneProductConfiguration {
         let storageOptions = self.storageOptions.map { option in
-            ConfigurationOption(name: option.name, price: option.price * conversionRate)
-        }
+                    ConfigurationOption(name: option.name, price: option.price * conversionRate)
+                }
 
-        return iPhoneProductConfiguration(storageOptions: storageOptions)
+                return iPhoneProductConfiguration(storageOptions: storageOptions)
     }
+
+    let storageOptions: [ConfigurationOption]
 }
 ```
 
