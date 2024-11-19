@@ -10,71 +10,80 @@
 
 ## Pattern overview
 
-- The `Decorator` pattern is a structural pattern that allows adding new behaviors to objects dynamically by placing them inside special wrapper objects that contain these behaviors.
-- These can be stacked on top of each other, each time adding a new behavior to the object.
-- For example, a service call can be decorated with logging, caching, and authorization behaviors.
-- The `Decorator` pattern is an alternative to subclassing. Subclassing adds behavior at compile time, and the change affects all instances of the original class.
-- `Decorator` objects can be used to add new behaviors to individual objects at runtime and can be selectively applied.
+- The Decorator pattern allows adding new behaviors to objects dynamically by placing them inside special wrapper objects that contain these behaviors.
+
+- These behaviors can be stacked on top of each other, allowing for a flexible way to add new features to objects.
 
 ## Problem statement
 
-- We would like a way to dynamically calculate the price of products based on if student/education discounts apply, or if Apple Care was selected.
-- With the Decorator pattern, we can stack classes to calculate the final price of a product based on the selected options.
+- When configuring a product, there are often multiple options to choose with different prices.
 
-## Domain application
+- There are also fixed price options that can be added to the product, such as AppleCare.
 
-Component:
+- The problem we are faced with is how to calculate the final price of a product based on the selected options.
 
-Defines the interface for objects that can have responsibilities added to them dynamically.
+- We would like to solve this problem in a way where each option conforms to the single responsibility principle and can be added dynamically.
+
+- The Decorator pattern helps us achieve this by enabling the chaining of multiple options together to calculate the final price of a product.
+
+## Definitions
+
+#### Component:
+
+Defines the protocol for objects that can have responsibilities added to them dynamically.
 
 ```swift
-protocol Product {
-    func getPrice() -> Double
+protocol PriceProviding {
+    var price: Double { get }
 }
 ```
 
-ConcreteComponent:
+#### Concrete components:
 
-Defines an object to which additional responsibilities can be attached.
+Defines the base products.
 
 ```swift
-class MacBookProduct: Product {
-    func getPrice() -> Double {
-        return 9999.00
+class MacBookProProduct: PriceProviding {
+    var price: Double {
+        return 5000.00
     }
 }
 
-class VisionProduct: Product {
-    func getPrice() -> Double {
-        return 9999.00
+class VisionProProduct: PriceProviding {
+    var price: Double {
+        return 3500.00
     }
 }
 ```
 
-Decorator:
+#### Decorator:
 
-Maintains a reference to a Component object and defines an interface that conforms to Component's interface.
+- Provides the base class for all decorators.
+
+- They alway contain a base product, that can then have options added to it.
 
 ```swift
-class BaseDecorator: Product {
-    private var product: Product
+class PriceDecorator: PriceProviding {
+    private let product: PriceProviding
 
-    init(product: Product) {
+    init(product: PriceProviding) {
         self.product = product
     }
 
-    func getPrice() -> Double {
-        return product.getPrice()
+    var price: Double {
+        return product.price
     }
 }
 ```
 
-ConcreteDecorator:
+#### Concrete decorator:
 
-Adds responsibilities to the component.
+- The concrete decorators add new options to the base product.
+
+- They override the `price` computed property to add the cost of the new option to the base product.
 
 ```swift
-class StorageDecorator: BaseDecorator {
+class StoragePriceDecorator: PriceDecorator {
     enum StorageOption: Double {
         case gb256 = 100.00
         case gb512 = 300.00
@@ -83,19 +92,39 @@ class StorageDecorator: BaseDecorator {
 
     private let storageOption: StorageOption
 
-    init(product: Product, storageOption: StorageOption) {
+    init(product: PriceProviding, storageOption: StorageOption) {
         self.storageOption = storageOption
         super.init(product: product)
     }
 
-    override func getPrice() -> Double {
-        return super.getPrice() + storageOption.rawValue
+    override var price: Double {
+        return super.price + storageOption.rawValue
     }
 }
 
-class AppleCareDecorator: BaseDecorator {
-    override func getPrice() -> Double {
-        return super.getPrice() + 199.00
+class AppleCarePriceDecorator: PriceDecorator {
+    override var price: Double {
+        return super.price + 200.00
     }
 }
+```
+
+## Example
+
+```swift
+let macBookPro = MacBookProProduct()
+let macBookProWithStorage = StoragePriceDecorator(product: macBookPro, storageOption: .tb1)
+let macBookProWithStorageAndAppleCare = AppleCarePriceDecorator(product: macBookProWithStorage)
+
+print(macBookPro.price) // 5000.0
+print(macBookProWithStorage.price) // 5500.0
+print(macBookProWithStorageAndAppleCare.price) // 5700.0
+
+let visionPro = VisionProProduct()
+let visionProWithStorage = StoragePriceDecorator(product: visionPro, storageOption: .gb512)
+let visionProWithStorageAndAppleCare = AppleCarePriceDecorator(product: visionProWithStorage)
+
+print(visionPro.price) // 3500.0
+print(visionProWithStorage.price) // 3800.0
+print(visionProWithStorageAndAppleCare.price) // 4000.0
 ```
