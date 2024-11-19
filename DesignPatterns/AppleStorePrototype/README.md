@@ -11,64 +11,82 @@
 ## Pattern overview
 
 - The Prototype pattern allows an object to create a copy of itself.
-- The pattern is used when creating an instance of a class is more expensive than copying an existing instance.
+
+- This is typically used when the recreation of an object is costly or complex.
+
+- It may also be used to create variations of an object without the need to subclass it.
 
 ## Problem statement
 
-- Consider the scenario where we would like to hold a reference to a saved Apple Watch Studio configuration.
-- This could later be restored, and be used to create a new configuration with the same properties.
-- The Prototype pattern is aimed at formalizing this process using an interface.
+- When configuring a product on the Apple Store, there are often multiple options to choose from.
 
-## Domain application
+- Let's assume there is a currency selector that allows us to quickly switch between different currencies.
 
-Prototype:
+- We would like to update the product configuration based on the selected currency, and avoid having to fetch the product configuration from the server each time.
 
-Declares an interface for cloning itself.
+- The Prototype pattern can be used to create a copy of the product configuration options with the updated currency.
+
+## Definitions
+
+#### Prototype:
+
+- Declares the protocol that provides a method for cloning concrete implementations.
+
+- Typically, this protocol will have a single method called `clone()`.
+
+- In our case, we have included a parameter to demonstrate the concept of cloning with a currency conversion rate.
 
 ```swift
-protocol Clonable {
-    func clone() -> Clonable
+protocol CloneableProductConfiguration {
+    func cloneWithConversionRate(of conversionRate: Double) -> Self
 }
 ```
 
-ConcretePrototype:
+#### ConcretePrototype:
 
-Implements an operation for cloning itself.
+- Implements an operation for cloning itself.
+
+- The price conversion method is kept simple for demonstration purposes.
 
 ```swift
-class AppleWatchStudioConfiguration: Clonable {
-    var caseMaterial: String
-    var bandMaterial: String
-    var caseSize: Int
-    var bandSize: Int
+struct ConfigurationOption {
+    let name: String
+    let price: Double
+}
 
-    init(caseMaterial: String, bandMaterial: String, caseSize: Int, bandSize: Int) {
-        self.caseMaterial = caseMaterial
-        self.bandMaterial = bandMaterial
-        self.caseSize = caseSize
-        self.bandSize = bandSize
+struct iPhoneProductConfiguration: CloneableProductConfiguration {
+    func cloneWithConversionRate(of conversionRate: Double) -> iPhoneProductConfiguration {
+        let storageOptions = self.storageOptions.map { option in
+            ConfigurationOption(name: option.name, price: option.price * conversionRate)
+        }
+
+        return iPhoneProductConfiguration(storageOptions: storageOptions)
     }
 
-    func clone() -> Clonable {
-        return AppleWatchConfiguration(caseMaterial: caseMaterial, bandMaterial: bandMaterial, caseSize: caseSize, bandSize: bandSize)
-    }
+    let storageOptions: [ConfigurationOption]
 }
 ```
 
-Client:
-
-Creates a new object by asking a prototype to clone itself.
+## Example
 
 ```swift
-class AppleWatchStudio {
-    var configuration: Clonable
+let configurationOptions = [
+    ConfigurationOption(name: "64GB", price: 700),
+    ConfigurationOption(name: "128GB", price: 800),
+    ConfigurationOption(name: "256GB", price: 900)
+]
 
-    init(configuration: Clonable) {
-        self.configuration = configuration
-    }
+let dollarConfiguration = iPhoneProductConfiguration(storageOptions: configurationOptions)
 
-    func createNewConfiguration() -> Clonable {
-        return configuration.clone()
-    }
+// Clone the configuration with a conversion rate of 0.9
+let euroConfiguration = dollarConfiguration.cloneWithConversionRate(of: 0.9)
+
+for option in euroConfiguration.storageOptions {
+    print("Storage: \(option.name), Price: \(option.price)")
 }
+
+// Output:
+// Storage: 64GB, Price: 630.0
+// Storage: 128GB, Price: 720.0
+// Storage: 256GB, Price: 810.0
 ```
