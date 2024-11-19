@@ -16,23 +16,17 @@
 
 ## Problem statement
 
-- Let's assume the Apple Store has an app that allows employees to administer the catalog of products.
+- Let's assume the Apple Store has an app that allows employees to manage the catalog of products.
 
-- The catalog contains categories, that may be nested, and products that belong to these categories.
-
-- When an employee navigates the catalog, they should be able to view the breadcrumbs, whether they are looking at a category or a product.
-
-- We can use the Composite pattern to add a requirement that each category and product should be able to display its own breadcrumbs.
-
-## Definitions
+- The catalog contains categories, that may be nested, and products that belong to categories.
 
 - When an employee navigates the catalog, they should be able to view the breadcrumbs, whether they are looking at a category or a product.
 
-- We can use the Composite pattern to add a requirement that each category and product should be able to display its own breadcrumbs.
+- Inheritantly, the problem arises where we don't have a consistent way to retrieve the breadcrumbs for categories and products.
 
-- Applying the patterns helps us maintain a consistent interface for both categories and products.
+- Ideally, we would like to be able to retrieve the breadcrumbs for any category or product using the same computed property `breadcrumbs`.
 
-- We are guaranteed that we can always call the `generateBreadcrumbs()` method on any object in the catalog.
+- The Composite pattern helps us solve this problem by allowing us to treat categories and products uniformly.
 
 ## Definitions
 
@@ -41,8 +35,8 @@
 The shared protocol for products and categories.
 
 ```swift
-protocol CatalogItem: AnyObject {
-    func generateBreadcrumbs() -> [String]
+protocol BreadcrumbProviding {
+    var breadcrumbs: [String] { get }
 }
 ```
 
@@ -55,42 +49,34 @@ protocol CatalogItem: AnyObject {
 - They can contain other categories and products.
 
 ```swift
-class CatalogCategory: CatalogItem {
-    private let name: String
+class Category: BreadcrumbProviding {
+    let name: String
+    private var children: [BreadcrumbProviding] = []
+    private var parent: Category?
 
-    init(name: String) {
+    init(name: String, parent: Category?) {
         self.name = name
+        self.parent = parent
     }
 
-    private var children: [any CatalogItem] = []
-    private var parent: CatalogCategory?
-
-    func addItem(_ item: any CatalogItem) {
-        children.append(item)
-
-        if let category = item as? CatalogCategory {
-            category.parent = self
+    func addChild(_ child: BreadcrumbProviding) {
+        if let category = child as? Category {
+            children.append(category)
         }
-        else if let product = item as? CatalogProduct {
-            product.parent = self
+
+        if let product = child as? Product {
+            product.setParent(self)
+            children.append(product)
         }
     }
 
-    func generateBreadcrumbs() -> [String] {
+    var breadcrumbs: [String] {
         if let parent = parent {
-            return parent.generateBreadcrumbs() + [name]
+            return parent.breadcrumbs + [name]
         }
         else {
             return [name]
         }
-    }
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
-
-    static func == (lhs: CatalogCategory, rhs: CatalogCategory) -> Bool {
-        return lhs.id == rhs.id
     }
 }
 ```
@@ -102,24 +88,27 @@ class CatalogCategory: CatalogItem {
 - Products are the leaf nodes in the catalog tree structure.
 
 ```swift
-class CatalogProduct: CatalogItem {
-    private let name: String
-    private let price: Double
+class Product: BreadcrumbProviding {
+    let name: String
+    let price: Double
+    private var parent: Category?
 
     init(name: String, price: Double) {
         self.name = name
         self.price = price
     }
 
-    public var parent: CatalogCategory?
-
-    func generateBreadcrumbs() -> [String] {
+    var breadcrumbs: [String] {
         if let parent = parent {
-            return parent.generateBreadcrumbs() + [name]
+            return parent.breadcrumbs + [name]
         }
         else {
             return [name]
         }
+    }
+
+    func setParent(_ parent: Category) {
+        self.parent = parent
     }
 }
 ```
@@ -127,16 +116,19 @@ class CatalogProduct: CatalogItem {
 ## Example
 
 ```swift
-let catalog = CatalogCategory(name: "Catalog")
-let macCategory = CatalogCategory(name: "Mac")
-let macAccessoriesCategory = CatalogCategory(name: "Mac Accessories")
-let macBookProCharger = CatalogProduct(name: "MacBook Pro Charger", price: 80)
+let rootCategory = Category(name: "Catalog", parent: nil)
+let macCategory = Category(name: "Mac", parent: rootCategory)
+let macBookCategory = Category(name: "MacBook", parent: macCategory)
 
-catalog.addItem(macCategory)
-macCategory.addItem(macAccessoriesCategory)
-macAccessoriesCategory.addItem(macBookProCharger)
+let macBookPro = Product(name: "MacBook Pro", price: 1299.99)
+let macBookAir = Product(name: "MacBook Air", price: 999.99)
 
-print(macBookProCharger.generateBreadcrumbs()) // ["Catalog", "Mac", "Mac Accessories", "MacBook Pro Charger"]
-print(macAccessoriesCategory.generateBreadcrumbs()) // ["Catalog", "Mac", "Mac Accessories"]
-print(macCategory.generateBreadcrumbs()) // ["Catalog", "Mac"]
+macBookCategory.addChild(macBookPro)
+macBookCategory.addChild(macBookAir)
+
+print(rootCategory.breadcrumbs) // ["Catalog"]
+print(macCategory.breadcrumbs) // ["Catalog", "Mac"]
+print(macBookCategory.breadcrumbs) // ["Catalog", "Mac", "MacBook"]
+print(macBookPro.breadcrumbs) // ["Catalog", "Mac", "MacBook", "MacBook Pro"]
+print(macBookAir.breadcrumbs) // ["Catalog", "Mac", "MacBook", "MacBook Air"]
 ```
