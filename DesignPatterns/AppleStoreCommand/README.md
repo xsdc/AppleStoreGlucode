@@ -28,7 +28,7 @@
 
 - These include keyboard shortcuts, voice commands, and via a timer that periodically moves to the next image.
 
-- We want to avoid bundling all these modes of interaction into a single class.
+- We want to avoid the problem of bundling all these modes of interaction into a single class.
 
 - The Command pattern is aimed at encapsulating these modes into separate objects called invokers.
 
@@ -77,7 +77,7 @@ class CarouselViewModel {
 - It will be implemented by concrete commands that map to the receiver.
 
 ```swift
-protocol CarouselCommand {
+protocol CommandExecutor {
     func execute()
 }
 ```
@@ -89,7 +89,7 @@ protocol CarouselCommand {
 - These commands will be used by the various invokers to interact with the view model.
 
 ```swift
-struct NavigateToNextItemCommand: CarouselCommand {
+struct NavigateToNextItemCommand: CommandExecutor {
     let receiver: CarouselViewModel
 
     func execute() {
@@ -97,7 +97,7 @@ struct NavigateToNextItemCommand: CarouselCommand {
     }
 }
 
-struct NavigateToPreviousItemCommand: CarouselCommand {
+struct NavigateToPreviousItemCommand: CommandExecutor {
     let receiver: CarouselViewModel
 
     func execute() {
@@ -105,7 +105,7 @@ struct NavigateToPreviousItemCommand: CarouselCommand {
     }
 }
 
-struct NavigateToItemCommand: CarouselCommand {
+struct NavigateToItemCommand: CommandExecutor {
     let receiver: CarouselViewModel
     let index: Int
 
@@ -123,9 +123,9 @@ struct NavigateToItemCommand: CarouselCommand {
 
 ```swift
 struct TapInvoker {
-    let navigateToNextCommand: CarouselCommand
-    let navigateToPreviousCommand: CarouselCommand
-    let navigateToItemCommand: CarouselCommand
+    let navigateToNextCommand: CommandExecutor
+    let navigateToPreviousCommand: CommandExecutor
+    let navigateToItemCommand: CommandExecutor
 
     func nextButtonTapped() {
         navigateToNextCommand.execute()
@@ -141,8 +141,8 @@ struct TapInvoker {
 }
 
 struct KeyboardInvoker {
-    let navigateToNextCommand: CarouselCommand
-    let navigateToPreviousCommand: CarouselCommand
+    let navigateToNextCommand: CommandExecutor
+    let navigateToPreviousCommand: CommandExecutor
 
     func keyPressedNext() {
         navigateToNextCommand?.execute()
@@ -154,7 +154,7 @@ struct KeyboardInvoker {
 }
 
 class TimerInvoker {
-    var navigateToNextCommand: CarouselCommand?
+    var navigateToNextCommand: CommandExecutor?
 
     private var dispatchTimer: DispatchSourceTimer?
 
