@@ -59,17 +59,6 @@ class Category: BreadcrumbProviding {
         self.parent = parent
     }
 
-    func addChild(_ child: BreadcrumbProviding) {
-        if let category = child as? Category {
-            children.append(category)
-        }
-
-        if let product = child as? Product {
-            product.setParent(self)
-            children.append(product)
-        }
-    }
-
     var breadcrumbs: [String] {
         if let parent = parent {
             return parent.breadcrumbs + [name]
@@ -77,6 +66,10 @@ class Category: BreadcrumbProviding {
         else {
             return [name]
         }
+    }
+
+    func addChild(_ child: BreadcrumbProviding) {
+        children.append(child)
     }
 }
 ```
@@ -121,7 +114,10 @@ let macCategory = Category(name: "Mac", parent: rootCategory)
 let macBookCategory = Category(name: "MacBook", parent: macCategory)
 
 let macBookPro = Product(name: "MacBook Pro", price: 1299.99)
+macBookPro.setParent(macBookCategory)
+
 let macBookAir = Product(name: "MacBook Air", price: 999.99)
+macBookAir.setParent(macBookCategory)
 
 macBookCategory.addChild(macBookPro)
 macBookCategory.addChild(macBookAir)
