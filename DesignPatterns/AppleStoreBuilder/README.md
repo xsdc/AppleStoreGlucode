@@ -51,7 +51,7 @@ struct AppleWatch {
 
 - Compare the `AppleWatchSeries10` and `AppleWatchHèrmesSeries10` builder enum types to see this in action.
 
-- The protocol makes use of a fluent interface, allowing for chaining of builder methods.
+- The protocol makes use of a fluent interface, allowing for the chaining of builder methods.
 
 ```swift
 protocol AppleWatchBuilder {
