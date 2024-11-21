@@ -24,7 +24,7 @@
 
 - Discount percentages can vary at any point, and additional discount types may be added in the future.
 
-- We would like a solution that avoids modifying the product objects directly every time a new discount type is added, or the discount percentage changes.
+- We would like to avoid the problem of modifying the product objects directly every time a new discount type is added, or the discount percentage changes.
 
 - The visitor pattern will allow us to separate discount types, and vary their discount percentages, without modifying the product classes, satifying the open/closed principle.
 
