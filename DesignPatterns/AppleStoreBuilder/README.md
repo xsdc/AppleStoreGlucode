@@ -152,42 +152,24 @@ class AppleWatchHèrmesSeries10: AppleWatchBuilder {
 }
 ```
 
-#### Director:
-
-- Maintains references to the builder objects.
-
-- Can be used to construct predefined product variations.
-
-```swift
-class AppleWatchStudio {
-    lazy var series10: AppleWatchSeries10 = {
-        let builder = AppleWatchSeries10()
-        return builder
-    }()
-
-    lazy var hermesSeries10: AppleWatchHèrmesSeries10 = {
-        let builder = AppleWatchHèrmesSeries10()
-        return builder
-    }()
-}
-```
-
 ## Example
 
 ```swift
-let appleWatchStudio = AppleWatchStudio()
+let series10 = AppleWatchSeries10()
 
-print(appleWatchStudio.series10.appleWatch) // Default Series 10 Apple Watch
+print(series10.appleWatch) // Default Series 10 Apple Watch
 // Output: AppleWatch(collection: "Series 10", size: "42mm", material: "Aluminum", band: "Sport Band")
 
-appleWatchStudio.series10.setSize(.fortySix).setMaterial(.titanium).setBand(.milaneseLoop) // Update Series 10 Apple Watch
-print(appleWatchStudio.series10.appleWatch)
+series10.setSize(.fortySix).setMaterial(.titanium).setBand(.milaneseLoop) // Update Series 10 Apple Watch
+print(series10.appleWatch)
 // Output: AppleWatch(collection: "Series 10", size: "46mm", material: "Titanium", band: "Milanese Loop")
 
-print(appleWatchStudio.hermesSeries10.appleWatch) // Default Hèrmes Series 10 Apple Watch
+let hermesSeries10 = AppleWatchHèrmesSeries10()
+
+print(hermesSeries10.appleWatch) // Default Hèrmes Series 10 Apple Watch
 // Output: AppleWatch(collection: "Hèrmes Series 10", size: "42mm", material: "Titanium", band: "Torsade Single Tour")
 
-appleWatchStudio.hermesSeries10.setSize(.fortySix).setMaterial(.titanium).setBand(.grand) // Update Hèrmes Series 10 Apple Watch
-print(appleWatchStudio.hermesSeries10.appleWatch)
+hermesSeries10.setSize(.fortySix).setMaterial(.titanium).setBand(.grand) // Update Hèrmes Series 10 Apple Watch
+print(hermesSeries10.appleWatch)
 // Output: AppleWatch(collection: "Hèrmes Series 10", size: "46mm", material: "Titanium", band: "Grand H")
 ```
