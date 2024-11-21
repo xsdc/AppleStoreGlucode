@@ -16,7 +16,7 @@
 
 ## Problem statement
 
-- Across the Apple Store, we would like access to a user's information for various purposes.
+- Across the Apple Store app, we would like access to a user's information for various purposes.
 
 - These include greeting the user, displaying their details, or showing their profile picture.
 
@@ -30,7 +30,9 @@
 
 #### Singleton:
 
-Responsbile for creating and managing the single instance of a class.
+- Responsbile for creating and managing the single instance of a class.
+
+- The initializer is private to prevent external instantiation.
 
 ```swift
 class UserInformation {
@@ -50,5 +52,5 @@ class UserInformation {
 
 ```swift
 let userInformation = UserInformation.shared
-print(userInformation.getGreeting()) // Hello, Tim
+print(userInformation.greeting) // Hello, Tim
 ```
