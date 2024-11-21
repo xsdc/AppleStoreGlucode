@@ -73,6 +73,8 @@ protocol AppleWatchBuilder {
 
 - Two concrete builders are defined here: `AppleWatchSeries10` and `AppleWatchHèrmesSeries10`.
 
+- Each one is tailored to a specific collection of Apple Watch.
+
 - Type aliases are used here to pair the associated types for each concrete builder's enum type implementation.
 
 ```swift
