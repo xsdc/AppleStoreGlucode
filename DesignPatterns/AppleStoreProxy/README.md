@@ -22,7 +22,7 @@
 
 - This is done in the `Bag` class.
 
-- We would like to add event logging via and analytics service to the `Bag` class, but we do not want to modify the class itself.
+- We would like to add event logging via an analytics service to the `Bag` class, but we do not want to modify the class itself.
 
 - To avoid the issue of adding logging to the `Bag` class, we can use the Proxy pattern.
 
