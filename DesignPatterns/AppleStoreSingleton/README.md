@@ -42,7 +42,7 @@ class UserInformation {
 
     var name: String = "Tim"
 
-    func getGreeting() -> String {
+    var greeting: String {
         return "Hello, \(name)"
     }
 }
