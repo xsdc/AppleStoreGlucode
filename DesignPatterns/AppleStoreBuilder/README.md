@@ -10,95 +10,184 @@
 
 ## Pattern overview
 
-- The Builder pattern allows for the construction of a complex object step by step.
-- The pattern allows for the construction of different representations of the object using the same construction process.
-- For example, consider a car. The car can be built with different features, such as the color, the interior, the wheels, and so on.
-- The Builder pattern allows for the construction of a car with different features using the same construction process.
+- The Builder pattern is used to construct objects piece by piece.
+
+- Each part of the object is configured via builder methods.
+
+- We are able to provide different representations of the object using the same construction process.
 
 ## Problem statement
 
-- Before placing an order on the Apple Store, various information comes together to create an order
-- Products, product quantities, shipping information, and payment information. The order is created by combining all this information.
-- The Builder pattern can be used to create an order by combining all this information.
+- The Apple Store has a feature called the Apple Watch Studio, which allows customers to choose the size, material, and band for their Apple Watch.
 
-## Domain application
+- There are different collections of Apple Watches, such as Series 10 and Hèrmes Series 10.
 
-Builder:
+- In the future, collections may be added or removed, and new sizes, materials, and bands may be introduced.
 
-Specifies an abstract interface for creating parts of a Product object.
+- No matter which collection and options are chosen, the API where we submit configured Apple Watches remains the same.
+
+- To avoid the problem of steering away from this requirement, we can use the Builder pattern, which allows for flexibility in the construction process, while still maintaining a consistent output.
+
+## Definitions
+
+#### Product:
+
+The object that is being constructed.
 
 ```swift
-protocol OrderBuilder {
-    func setProduct(product: Product)
-    func setQuantity(quantity: Int)
-    func setShippingAddress(address: String)
-    func setPaymentMethod(paymentMethod: String)
-    func build() -> Order
+struct AppleWatch {
+    var collection: String
+    var size: String
+    var material: String
+    var band: String
 }
 ```
 
-ConcreteBuilder:
+#### Builder:
 
-- Constructs and assembles parts of the product by implementing the Builder interface.
-- Defines and keeps track of the representation it creates.
-- Provides an interface for retrieving the product.
+- The protocol that declares the options for constructing the product.
+
+- Associated types are used here so that each concrete builder can define its own enum types for size, material, and band.
+
+- Compare the `AppleWatchSeries10` and `AppleWatchHèrmesSeries10` builder enum types to see this in action.
+
+- The protocol makes use of a fluent interface, allowing for chaining of builder methods.
 
 ```swift
-class CheckoutOrderBuilder: OrderBuilder {
-    private var order = Order()
+protocol AppleWatchBuilder {
+    var appleWatch: AppleWatch { get }
 
-    func setProduct(product: Product) {
-        order.product = product
+    associatedtype SizeType
+    associatedtype MaterialType
+    associatedtype BandType
+
+    func setSize(_ size: SizeType) -> Self
+    func setMaterial(_ material: MaterialType) -> Self
+    func setBand(_ band: BandType) -> Self
+}
+```
+
+#### Concrete builders:
+
+- Conforms to the builder protocol and provides an implementation for building the product.
+
+- Two concrete builders are defined here: `AppleWatchSeries10` and `AppleWatchHèrmesSeries10`.
+
+- Type aliases are used here to pair the associated types for each concrete builder's enum type implementation.
+
+```swift
+class AppleWatchSeries10: AppleWatchBuilder {
+    var appleWatch = AppleWatch(collection: "Series 10", size: Size.fortyTwo.rawValue, material: Material.aluminum.rawValue, band: Band.sportBand.rawValue)
+
+    enum Size: String {
+        case fortyTwo = "42mm"
+        case fortySix = "46mm"
     }
 
-    func setQuantity(quantity: Int) {
-        order.quantity = quantity
+    enum Material: String {
+        case aluminum = "Aluminum"
+        case titanium = "Titanium"
     }
 
-    func setShippingAddress(address: String) {
-        order.shippingAddress = address
+    enum Band: String {
+        case sportBand = "Sport Band"
+        case milaneseLoop = "Milanese Loop"
     }
 
-    func setPaymentMethod(paymentMethod: String) {
-        order.paymentMethod = paymentMethod
+    typealias SizeType = Size
+    typealias MaterialType = Material
+    typealias BandType = Band
+
+    func setSize(_ size: Size) -> Self {
+        appleWatch.size = size.rawValue
+        return self
     }
 
-    func build() -> Order {
-        return order
+    func setMaterial(_ material: Material) -> Self {
+        appleWatch.material = material.rawValue
+        return self
+    }
+
+    func setBand(_ band: Band) -> Self {
+        appleWatch.band = band.rawValue
+        return self
+    }
+}
+
+class AppleWatchHèrmesSeries10: AppleWatchBuilder {
+    var appleWatch = AppleWatch(collection: "Hèrmes Series 10", size: Size.fortyTwo.rawValue, material: Material.titanium.rawValue, band: Band.torsade.rawValue)
+
+    enum Size: String {
+        case fortyTwo = "42mm"
+        case fortySix = "46mm"
+    }
+
+    enum Material: String {
+        case titanium = "Titanium"
+    }
+
+    enum Band: String {
+        case torsade = "Torsade Single Tour"
+        case grand = "Grand H"
+    }
+
+    typealias SizeType = Size
+    typealias MaterialType = Material
+    typealias BandType = Band
+
+    func setSize(_ size: Size) -> Self {
+        appleWatch.size = size.rawValue
+        return self
+    }
+
+    func setMaterial(_ material: Material) -> Self {
+        appleWatch.material = material.rawValue
+        return self
+    }
+
+    func setBand(_ band: Band) -> Self {
+        appleWatch.band = band.rawValue
+        return self
     }
 }
 ```
 
-Director:
+#### Director:
 
-Constructs an object using the Builder interface.
+- Maintains references to the builder objects.
+
+- Can be used to construct predefined product variations.
 
 ```swift
-class OrderDirector {
-    let builder: OrderBuilder
+class AppleWatchStudio {
+    lazy var series10: AppleWatchSeries10 = {
+        let builder = AppleWatchSeries10()
+        return builder
+    }()
 
-    func construct() -> Order {
-        builder.setProduct(product: Product(name: "iPhone", price: 999.00))
-        builder.setQuantity(quantity: 1)
-        builder.setShippingAddress(address: "123 7th Ave, New York, NY 10001")
-        builder.setPaymentMethod(paymentMethod: "Credit Card")
-
-        return builder.build()
-    }
+    lazy var hermesSeries10: AppleWatchHèrmesSeries10 = {
+        let builder = AppleWatchHèrmesSeries10()
+        return builder
+    }()
 }
 ```
 
-Product:
-
-- Represents the complex object under construction.
-- ConcreteBuilder builds the product's internal representation and defines the process by which it's assembled.
-- Includes classes that define the constituent parts, including interfaces for assembling the parts into the final result.
+## Example
 
 ```swift
-struct Order {
-    var product: Product?
-    var quantity: Int?
-    var shippingAddress: String?
-    var paymentMethod: String?
-}
+let appleWatchStudio = AppleWatchStudio()
+
+print(appleWatchStudio.series10.appleWatch) // Default Series 10 Apple Watch
+// Output: AppleWatch(collection: "Series 10", size: "42mm", material: "Aluminum", band: "Sport Band")
+
+appleWatchStudio.series10.setSize(.fortySix).setMaterial(.titanium).setBand(.milaneseLoop) // Update Series 10 Apple Watch
+print(appleWatchStudio.series10.appleWatch)
+// Output: AppleWatch(collection: "Series 10", size: "46mm", material: "Titanium", band: "Milanese Loop")
+
+print(appleWatchStudio.hermesSeries10.appleWatch) // Default Hèrmes Series 10 Apple Watch
+// Output: AppleWatch(collection: "Hèrmes Series 10", size: "42mm", material: "Titanium", band: "Torsade Single Tour")
+
+appleWatchStudio.hermesSeries10.setSize(.fortySix).setMaterial(.titanium).setBand(.grand) // Update Hèrmes Series 10 Apple Watch
+print(appleWatchStudio.hermesSeries10.appleWatch)
+// Output: AppleWatch(collection: "Hèrmes Series 10", size: "46mm", material: "Titanium", band: "Grand H")
 ```
