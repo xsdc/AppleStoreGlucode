@@ -39,8 +39,8 @@
 Defines the protocol for objects that would like to be notified of changes to the bag products.
 
 ```swift
-protocol BagObserver: AnyObject {
-    func bagUpdatedWithProducts(_ products: [Product])
+protocol Observer: AnyObject {
+    func notificationWithObject(_ object: Any)
 }
 ```
 
@@ -55,17 +55,19 @@ protocol BagObserver: AnyObject {
 - We attach the observer to the subject in the initializer, and detach it in the deinitializer.
 
 ```swift
-class BagListViewModel: BagObserver {
-    private let notifier: BagNotifier
-    private(set) var products: [Product] = []
+class BagListViewModel: Observer {
+    var products: [Product] = []
+    private let notifier: Notifier
 
-    init(notifier: BagNotifier) {
+    init(notifier: Notifier) {
         self.notifier = notifier
         self.notifier.attachObserver(self)
     }
 
-    func bagUpdatedWithProducts(_ products: [Product]) {
-        self.products = products
+    func notificationWithObject(_ object: Any) {
+        if let products = object as? [Product] {
+            self.products = products
+        }
     }
 
     deinit {
@@ -73,17 +75,19 @@ class BagListViewModel: BagObserver {
     }
 }
 
-class BagIconViewModel: BagObserver {
-    private let notifier: BagNotifier
-    private(set) var badgeCount: Int = 0
+class BagIconViewModel: Observer {
+    var badgeCount: Int = 0
+    private let notifier: Notifier
 
-    init(notifier: BagNotifier) {
+    init(notifier: Notifier) {
         self.notifier = notifier
         self.notifier.attachObserver(self)
     }
 
-    func bagUpdatedWithProducts(_ products: [Product]) {
-        self.badgeCount = products.count
+    func notificationWithObject(_ object: Any) {
+        if let products = object as? [Product] {
+            self.badgeCount = products.count
+        }
     }
 
     deinit {
@@ -97,9 +101,9 @@ class BagIconViewModel: BagObserver {
 Defines the protocol for managing observers.
 
 ```swift
-protocol BagNotifier {
-    func attachObserver(_ observer: BagObserver)
-    func detachObserver(_ observer: BagObserver)
+protocol Notifier {
+    func attachObserver(_ observer: Observer)
+    func detachObserver(_ observer: Observer)
     func notify()
 }
 ```
@@ -113,24 +117,24 @@ protocol BagNotifier {
 - Sends a notification to its observers when its state changes.
 
 ```swift
-class WebSocketBagNotifier: BagNotifier {
-    private var observers: [BagObserver] = []
+class WebSocketBagNotifier: Notifier {
+    private var observers: [Observer] = []
     private var products: [Product] = []
 
-    func attachObserver(_ observer: BagObserver) {
+    func attachObserver(_ observer: Observer) {
         observers.append(observer)
     }
 
-    func detachObserver(_ observer: BagObserver) {
+    func detachObserver(_ observer: Observer) {
         observers.removeAll { $0 === observer }
     }
 
     func notify() {
-        observers.forEach { $0.bagUpdatedWithProducts(self.products) }
+        observers.forEach { $0.notificationWithObject(self.products) }
     }
 
-    func testReceivingUpdatedBagProducts(_ product: [Product]) {
-        self.products = product
+    func testNotificationAfterAddingProduct(_ product: Product) {
+        self.products.append(product)
         notify()
     }
 }
@@ -140,7 +144,6 @@ class WebSocketBagNotifier: BagNotifier {
 
 ```swift
 struct Product {
-    let id: String
     let name: String
     let price: Double
 }
@@ -149,13 +152,17 @@ let notifier = WebSocketBagNotifier()
 let bagListViewModel = BagListViewModel(notifier: notifier)
 let bagIconViewModel = BagIconViewModel(notifier: notifier)
 
+// Default values
+
 print(bagListViewModel.products) // []
 print(bagIconViewModel.badgeCount) // 0
 
-notifier.testReceivingUpdatedBagProducts([
-    Product(id: "1", name: "iPad Pro", price: 999.99)
-])
+notifier.testNotificationAfterAddingProduct(
+    Product(name: "iPad Pro", price: 999.99)
+)
 
-print(bagListViewModel.products) // [Product(id: "1", name: "iPad Pro", price: 999.99)]
+// Values after product added to the bag
+
+print(bagListViewModel.products) // [Product(name: "iPad Pro", price: 999.99)]
 print(bagIconViewModel.badgeCount) // 1
 ```
