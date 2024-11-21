@@ -98,12 +98,17 @@ class BagIconViewModel: Observer {
 
 #### Subject:
 
-Defines the protocol for managing observers.
+- `ObserverManaging` defines the protocol for managing observers.
+
+- `Notifier` defines the protocol for notifying observers.
 
 ```swift
-protocol Notifier {
+procotol ObserverManaging {
     func attachObserver(_ observer: Observer)
     func detachObserver(_ observer: Observer)
+}
+
+protocol Notifier {
     func notify()
 }
 ```
@@ -117,9 +122,14 @@ protocol Notifier {
 - Sends a notification to its observers when its state changes.
 
 ```swift
-class WebSocketBagNotifier: Notifier {
+class WebSocketBagNotifier: Notifier, ObserverManaging {
     private var observers: [Observer] = []
     private var products: [Product] = []
+
+    func testNotificationAfterAddingProduct(_ product: Product) {
+        self.products.append(product)
+        notify()
+    }
 
     func attachObserver(_ observer: Observer) {
         observers.append(observer)
@@ -131,11 +141,6 @@ class WebSocketBagNotifier: Notifier {
 
     func notify() {
         observers.forEach { $0.notificationWithObject(self.products) }
-    }
-
-    func testNotificationAfterAddingProduct(_ product: Product) {
-        self.products.append(product)
-        notify()
     }
 }
 ```
