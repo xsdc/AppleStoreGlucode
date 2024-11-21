@@ -32,7 +32,9 @@
 
 #### Product:
 
-Defines the protocol for the objects that the factory method creates.
+- Defines the protocol for the objects that the factory method creates.
+
+- This provides a common interface for all `ShippingMethod` objects.
 
 ```swift
 protocol ShippingMethod {
@@ -45,7 +47,7 @@ protocol ShippingMethod {
 
 - Implementations of the various shipping methods.
 
-- Calculations are kept simple for demonstration purposes.
+- The shipping cost and delivery estimation implementations are kept simple for demonstration purposes.
 
 ```swift
 struct InStorePickupMethod: ShippingMethod {
@@ -101,7 +103,7 @@ struct InternationalShippingMethod: ShippingMethod {
 
 #### Creator:
 
-- Declares the factory method, which returns an object of type `ShippingMethod`.
+- The protocol that is to be used to create shipping methods and return them as `ShippingMethod` objects.
 
 - This abstraction enables creating objects without specifying the exact class of the object that will be created.
 
