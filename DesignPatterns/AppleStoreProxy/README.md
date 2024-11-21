@@ -18,15 +18,15 @@
 
 ## Problem statement
 
-- Apple Store users are able to clear all items added to their bag.
+- Apple Store users are able to add and remove items from their bag.
 
-- We currently have an object dedicated to clearing the bag called `BagClearer`.
+- This is done in the `Bag` class.
 
-- Let's assume that authentication is currently handled in the bag clearing object.
+- We would like to add event logging via and analytics service to the `Bag` class, but we do not want to modify the class itself.
 
-- We would like to avoid this problem, and opt for a more modular approach that conforms to the single responsibility principle.
+- To avoid the issue of adding logging to the `Bag` class, we can use the Proxy pattern.
 
-- The proxy pattern allows us to separate the authentication logic from the bag clearing object, and treat it as a separate concern.
+- The proxy pattern allows us to separate the analytics logic from the `Bag` class, conforming to the single responsibility principle.
 
 ## Definitions
 
@@ -34,11 +34,15 @@
 
 - Defines the common protocol for the real subject and the proxy.
 
-- By defining a common protocol, authentication can be separated from the real subject.
+- By defining a common protocol, we can use the proxy in place of the real subject.
+
+- The proxy will be used to add the additional analytics behavior to the real subject `Bag`, without changing it.
 
 ```swift
-protocol BagClearing {
-    func clearBag()
+protocol ProductManaging {
+    func addProduct(_ product: Product)
+    func removeProduct(_ product: Product)
+    func clearAllProducts()
 }
 ```
 
@@ -46,11 +50,19 @@ protocol BagClearing {
 
 - The object that we want to add behavior to.
 
-- We are now able to separate the authentication logic from the real subject.
+- In our scenario, this is an existing `Bag` class that we would like add analytics to.
 
 ```swift
-struct BagClearer: BagClearing {
-    func clearBag() {
+struct Bag: ProductManaging {
+    func addProduct(_ product: Product) {
+        print("Product added to bag")
+    }
+
+    func removeProduct(_ product: Product) {
+        print("Product removed from bag")
+    }
+
+    func clearAllProducts() {
         print("Bag has been cleared")
     }
 }
@@ -58,27 +70,36 @@ struct BagClearer: BagClearing {
 
 #### Proxy:
 
-- Maintains a reference to the real subject.
+- Maintains a reference to the real subject, via dependency injection.
 
 - Share a protocol with the real subject so that the proxy can be used anywhere the real subject is expected.
 
-- We can now add the authentication logic without changing the core functionality of the `BagClearer` object.
+- We can now add the analytics behavior to the proxy without changing the real subject, while still making use of its functionality.
 
 ```swift
-struct BagClearerWithAuthentication: BagClearing {
-    let bagClearer: BagClearer
+struct BagWithAnalyticsProxy: ProductManaging {
+    let bag: ProductManaging
 
-    func clearBag() {
-        if checkIfAuthenticated() {
-            bagClearer.clearBag()
-        }
-        else {
-            print("Authentication required to clear bag")
-        }
+    func addProduct(_ product: Product) {
+        bag.addProduct(product)
+
+        logAnalyticsEvent(with: "productAddedFromBag")
     }
 
-    private func checkIfAuthenticated() -> Bool {
-        return false
+    func removeProduct(_ product: Product) {
+        bag.removeProduct(product)
+
+        logAnalyticsEvent(with: "productRemovedFromBag")
+    }
+
+    func clearAllProducts() {
+        bag.clearAllProducts()
+
+        logAnalyticsEvent(with: "allProductsRemovedFromBag")
+    }
+
+    private func logAnalyticsEvent(with id: String) {
+        print("Analytics event logged with identifier: \(id)")
     }
 }
 ```
@@ -86,9 +107,33 @@ struct BagClearerWithAuthentication: BagClearing {
 ## Example
 
 ```swift
-let bagClearer = BagClearer()
-bagClearer.clearBag() // Bag has been cleared
+struct Product {
+    let name: String
+    let price: Double
+}
 
-let bagClearerWithAuthentication = BagClearerWithAuthentication(bagClearer: bagClearer)
-bagClearerWithAuthentication.clearBag() // Authentication required to clear bag
+let bag = Bag()
+let bagWithAnalyticsProxy = BagWithAnalyticsProxy(bag: bag)
+
+bagWithAnalyticsProxy.addProduct(
+    Product(name: "iPhone", price: 999.99)
+)
+
+// Output:
+// Product added to bag
+// Analytics event logged with identifier: productAddedFromBag
+
+bagWithAnalyticsProxy.removeProduct(
+    Product(name: "iPhone", price: 999.99)
+)
+
+// Output:
+// Product removed from bag
+// Analytics event logged with identifier: productRemovedFromBag
+
+bagWithAnalyticsProxy.clearAllProducts()
+
+// Output:
+// Bag has been cleared
+// Analytics event logged with identifier: allProductsRemovedFromBag
 ```
