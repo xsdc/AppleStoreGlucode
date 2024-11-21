@@ -35,8 +35,8 @@
 - The initializer is private to prevent external instantiation.
 
 ```swift
-class UserInformation {
-    static let shared = UserInformation()
+class User {
+    static let shared = User()
 
     private init() {}
 
@@ -51,6 +51,6 @@ class UserInformation {
 ## Example
 
 ```swift
-let userInformation = UserInformation.shared
-print(userInformation.greeting) // Hello, Tim
+let user = User.shared
+print(user.greeting) // Hello, Tim
 ```
