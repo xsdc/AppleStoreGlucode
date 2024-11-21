@@ -30,22 +30,6 @@
 
 ## Definitions
 
-#### Subject:
-
-- Defines the common protocol for the real subject and the proxy.
-
-- By defining a common protocol, we can use the proxy in place of the real subject.
-
-- The proxy will be used to add the additional analytics behavior to the real subject `Bag`, without changing it.
-
-```swift
-protocol ProductManaging {
-    func addProduct(_ product: Product)
-    func removeProduct(_ product: Product)
-    func clearAllProducts()
-}
-```
-
 #### Real subject:
 
 - The object that we want to add behavior to.
@@ -65,6 +49,22 @@ struct Bag: ProductManaging {
     func clearAllProducts() {
         print("Bag has been cleared")
     }
+}
+```
+
+#### Subject:
+
+- Defines the common protocol for the real subject and the proxy.
+
+- By defining a common protocol, we can use the proxy in place of the real subject.
+
+- The proxy will be used to add the additional analytics behavior to the real subject `Bag`, without changing it.
+
+```swift
+protocol ProductManaging {
+    func addProduct(_ product: Product)
+    func removeProduct(_ product: Product)
+    func clearAllProducts()
 }
 ```
 
