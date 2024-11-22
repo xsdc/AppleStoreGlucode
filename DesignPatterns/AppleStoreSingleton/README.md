@@ -10,32 +10,47 @@
 
 ## Pattern overview
 
-- The Singleton pattern ensures that a class has only one instance and provides a global point of access to it.
-- For example, a database connection that is shared across the application.
-- This allows for efficient resource management and ensures that there is only one instance of the class.
+- The Singleton pattern ensures that only one instance of a particular class is ever created.
+
+- This can be leveraged to provide efficient resource management.
 
 ## Problem statement
 
-- We would like to ensure that a user's information is globally accessible
+- Across the Apple Store app, we would like access to a user's information for various purposes.
+
+- These include greeting the user, displaying their details, or showing their profile picture.
+
+- Our team has decided to avoid passing the user's information across the app.
+
+- We can use the Singleton pattern to solve this problem.
+
 - This allows us to conveniently access and update it.
 
-## Domain application
+## Definitions
 
-Singleton:
+#### Singleton:
 
-- Defines an Instance operation that lets clients access its unique instance. Instance is a class operation.
-- May be responsible for creating its own unique instance.
+- Responsbile for creating and managing the single instance of a class.
+
+- The initializer is private to prevent external instantiation.
 
 ```swift
-class UserInformation {
-    static let shared = UserInformation()
+class User {
+    static let shared = User()
 
     private init() {}
 
     var name: String = "Tim"
 
-    func getGreeting() -> String {
+    var greeting: String {
         return "Hello, \(name)"
     }
 }
+```
+
+## Example
+
+```swift
+let user = User.shared
+print(user.greeting) // Hello, Tim
 ```
