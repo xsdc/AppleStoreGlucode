@@ -48,23 +48,23 @@
 
 ```swift
 class CarouselViewModel {
-    private let images: [String]
-    private(set) var currentIndex: Int
+    private(set) var imagePaths: [String]
+    private(set) var currentIndex: Int = 0
 
-    init(images: [String]) {
-        self.currentIndex = 0
-        self.images = images
+    init(imagePaths: [String]) {
+        self.imagePaths = imagePaths
     }
 
     func navigateToNextItem() {
-        currentIndex = (currentIndex + 1) % images.count
+        currentIndex = (currentIndex + 1) % imagePaths.count
     }
 
     func navigateToPreviousItem() {
-        currentIndex = (currentIndex - 1) % images.count
+        currentIndex = ((currentIndex - 1) + imagePaths.count) % imagePaths.count
     }
 
     func navigateToItem(at index: Int) {
+        guard index >= 0 && index < imagePaths.count else { return }
         currentIndex = index
     }
 }
@@ -77,7 +77,7 @@ class CarouselViewModel {
 - It will be implemented by concrete commands that map to the receiver.
 
 ```swift
-protocol CommandExecutor {
+protocol CommandExecuting {
     func execute()
 }
 ```
@@ -89,7 +89,7 @@ protocol CommandExecutor {
 - These commands will be used by the various invokers to interact with the view model.
 
 ```swift
-struct NavigateToNextItemCommand: CommandExecutor {
+struct NavigateToNextItemCommand: CommandExecuting {
     let receiver: CarouselViewModel
 
     func execute() {
@@ -97,7 +97,7 @@ struct NavigateToNextItemCommand: CommandExecutor {
     }
 }
 
-struct NavigateToPreviousItemCommand: CommandExecutor {
+struct NavigateToPreviousItemCommand: CommandExecuting {
     let receiver: CarouselViewModel
 
     func execute() {
@@ -105,7 +105,7 @@ struct NavigateToPreviousItemCommand: CommandExecutor {
     }
 }
 
-struct NavigateToItemCommand: CommandExecutor {
+struct NavigateToItemCommand: CommandExecuting {
     let receiver: CarouselViewModel
     let index: Int
 
@@ -123,53 +123,50 @@ struct NavigateToItemCommand: CommandExecutor {
 
 ```swift
 struct TapInvoker {
-    let navigateToNextCommand: CommandExecutor
-    let navigateToPreviousCommand: CommandExecutor
-    let navigateToItemCommand: CommandExecutor
+    let receiver: CarouselViewModel
 
-    func nextButtonTapped() {
+    func rightArrowButtonTapped() {
+        let navigateToNextCommand = NavigateToNextItemCommand(receiver: receiver)
         navigateToNextCommand.execute()
     }
 
-    func previousButtonTapped() {
+    func leftArrowButtonTapped() {
+        let navigateToPreviousCommand = NavigateToPreviousItemCommand(receiver: receiver)
         navigateToPreviousCommand.execute()
     }
 
-    func specificIndexTapped(index: Int) {
+    func buttonTappedForIndex(_ index: Int) {
+        let navigateToItemCommand = NavigateToItemCommand(receiver: receiver, index: index)
         navigateToItemCommand.execute()
     }
 }
 
 struct KeyboardInvoker {
-    let navigateToNextCommand: CommandExecutor
-    let navigateToPreviousCommand: CommandExecutor
+    let receiver: CarouselViewModel
 
-    func keyPressedNext() {
-        navigateToNextCommand?.execute()
+    func rightArrowKeyPressed() {
+        let navigateToNextCommand = NavigateToNextItemCommand(receiver: receiver)
+        navigateToNextCommand.execute()
     }
 
-    func keyPressedPrevious() {
-        navigateToPreviousCommand?.execute()
+    func leftArrowKeyPressed() {
+        let navigateToPreviousCommand = NavigateToPreviousItemCommand(receiver: receiver)
+        navigateToPreviousCommand.execute()
     }
 }
 
-class TimerInvoker {
-    var navigateToNextCommand: CommandExecutor?
-
-    private var dispatchTimer: DispatchSourceTimer?
+struct TimerInvoker {
+    let receiver: CarouselViewModel
+    private let dispatchTimer = DispatchSource.makeTimerSource(queue: DispatchQueue.main)
 
     func startTimer(interval: TimeInterval) {
-        let queue = DispatchQueue.main
-        dispatchTimer = DispatchSource.makeTimerSource(queue: queue)
-        dispatchTimer?.schedule(deadline: .now() + interval, repeating: interval)
-        dispatchTimer?.setEventHandler { [weak self] in
-            self?.navigateToNextCommand?.execute()
+        let navigateToNextCommand = NavigateToNextItemCommand(receiver: receiver)
 
-            if let command = self?.navigateToNextCommand as? NavigateToNextItemCommand {
-                print("Carousel index updated via timer: " + "\(command.receiver.currentIndex)")
-            }
+        dispatchTimer.schedule(deadline: .now() + interval, repeating: interval)
+        dispatchTimer.setEventHandler {
+            navigateToNextCommand.execute()
         }
-        dispatchTimer?.resume()
+        dispatchTimer.resume()
     }
 }
 ```
@@ -184,60 +181,43 @@ class TimerInvoker {
 
 ```swift
 class CarouselView {
-    private let carouselViewModel: CarouselViewModel
-
-    init(carouselViewModel: CarouselViewModel) {
-        self.carouselViewModel = carouselViewModel
-
-        self.tapInvoker = TapInvoker()
-        self.tapInvoker.navigateToNextCommand = NavigateToNextItemCommand(receiver: carouselViewModel)
-        self.tapInvoker.navigateToPreviousCommand = NavigateToPreviousItemCommand(receiver: carouselViewModel)
-        self.tapInvoker.navigateToItemCommand = NavigateToNextItemCommand(receiver: carouselViewModel)
-
-        self.keyboardInvoker = KeyboardInvoker()
-        self.keyboardInvoker.navigateToNextCommand = NavigateToNextItemCommand(receiver: carouselViewModel)
-        self.keyboardInvoker.navigateToPreviousCommand = NavigateToPreviousItemCommand(receiver: carouselViewModel)
-
-        self.timerInvoker = TimerInvoker()
-        self.timerInvoker.navigateToNextCommand = NavigateToNextItemCommand(receiver: carouselViewModel)
-
-        print("Carousel starting index: " + "\(viewModel.currentIndex)")
-    }
-
-    private let tapInvoker: TapInvoker
+    let viewModel: CarouselViewModel
     private let keyboardInvoker: KeyboardInvoker
+    private let tapInvoker: TapInvoker
     private let timerInvoker: TimerInvoker
 
-    // Simulate button taps
-
-    func simulateTapForNextButton() {
-        tapInvoker.nextButtonTapped()
-        print("Carousel index: " + "\(viewModel.currentIndex)")
+    init(viewModel: CarouselViewModel) {
+        self.viewModel = viewModel
+        self.keyboardInvoker = KeyboardInvoker(receiver: viewModel)
+        self.tapInvoker = TapInvoker(receiver: viewModel)
+        self.timerInvoker = TimerInvoker(receiver: viewModel)
     }
 
-    func simulateTapForPreviousButton() {
-        tapInvoker.previousButtonTapped()
-        print("Carousel index: " + "\(viewModel.currentIndex)")
+    // Tap invoker
+
+    func rightArrowButtonTapped() {
+        tapInvoker.rightArrowButtonTapped()
     }
 
-    func simulateTapOnSpecificIndex(index: Int) {
-        tapInvoker.specificIndexTapped(index: index)
-        print("Carousel index: " + "\(viewModel.currentIndex)")
+    func leftArrowButtonTapped() {
+        tapInvoker.leftArrowButtonTapped()
     }
 
-    // Simulate keyboard presses
-
-    func simulateRightArrowKeyPress() {
-        keyboardInvoker.keyPressedNext()
-        print("Carousel index: " + "\(viewModel.currentIndex)")
+    func buttonTappedForIndex(_ index: Int) {
+        tapInvoker.buttonTappedForIndex(index)
     }
 
-    func simulateLeftArrowKeyPress() {
-        keyboardInvoker.keyPressedPrevious()
-        print("Carousel index: " + "\(viewModel.currentIndex)")
+    // Keyboard invoker
+
+    func rightArrowKeyPressed() {
+        keyboardInvoker.rightArrowKeyPressed()
     }
 
-    // Simulate timer
+    func leftArrowKeyPressed() {
+        keyboardInvoker.leftArrowKeyPressed()
+    }
+
+    // Timer invoker
 
     func simulateTimerStart() {
         timerInvoker.startTimer(interval: 5.0)
@@ -248,36 +228,21 @@ class CarouselView {
 ## Example
 
 ```swift
-let viewModel = CarouselViewModel(images: ["image1", "image2", "image3", "image4"])
-let view = CarouselView(carouselViewModel: viewModel)
+let viewModel = CarouselViewModel(imagePaths: ["image1", "image2", "image3", "image4"])
+let view = CarouselView(viewModel: viewModel)
 
 // Tap invoker
-view.simulateTapForNextButton()  // Increment by 1
-view.simulateTapForPreviousButton() // Decrement by 1
-view.simulateTapOnSpecificIndex(index: 1) // Set to index 1
+
+view.rightArrowButtonTapped()  // Increment carousel index
+view.leftArrowButtonTapped() // Decrement carousel index
+view.buttonTappedForIndex(1)// Set carousel index to 1
 
 // Keyboard invoker
-view.simulateRightArrowKeyPress() // Increment by 1
-view.simulateLeftArrowKeyPress() // Decrement by 1
 
-// Output:
-// Carousel starting index: 0
-// Carousel index: 1
-// Carousel index: 0
-// Carousel index: 1
-// Carousel index: 2
-// Carousel index: 1
+view.rightArrowKeyPressed() // Increment carousel index
+view.leftArrowKeyPressed() // Decrement carousel index
 
 // Timer invoker
-view.simulateTimerStart()
 
-// Output:
-// Carousel index updated via timer: 2
-// Carousel index updated via timer: 3
-// Carousel index updated via timer: 0
-// Carousel index updated via timer: 1
-// Carousel index updated via timer: 2
-// Carousel index updated via timer: 3
-// Carousel index updated via timer: 0
-// ...
+view.simulateTimerStart() // Increments carousel index every 5 seconds
 ```
