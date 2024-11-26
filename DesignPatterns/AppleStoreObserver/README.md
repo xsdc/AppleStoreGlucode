@@ -20,17 +20,17 @@
 
 - Each Apple Store customer's bag contains an array of products, which are stored on the server.
 
-- When on the Apple Store bag list view, we would like to keep the array of products up to date, even if they are added or removed from another device.
+- When on the Apple Store bag view, we would like to keep the array of products up to date, even if they are added or removed from another device.
 
-- In the top navigation, we would also like the bag icon view badge count to be in sync with the bag product count.
+- In the top navigation, we would also like the bag icon badge count to be in sync with the bag product count.
 
-- Both the bag icon view and bag list view need to be updated when products are added or removed.
+- Without implementing the observer pattern, views would need to actively retrieve data in order to stay up to date.
 
-- We would like to avoid having to check for changes in each individual view.
+- This may result in redundant fetching, or the views may end up out of sync with the underlying model.
 
 - The Observer pattern solves this problem by creating a single source of truth for the bag product array and notifying all observers when a change occurs.
 
-- This allows for a decoupled design where there is a clear separation of concerns between the subject and the observers, conforming to the single responsibility principle.
+- This allows for a decoupled design where there is a clear separation of concerns between the subject and the observers.
 
 ## Definitions
 
@@ -39,7 +39,7 @@
 Defines the protocol for objects that would like to be notified of changes to the bag products.
 
 ```swift
-protocol Observer: AnyObject {
+protocol Observer {
     func notificationWithObject(_ object: Any)
 }
 ```
@@ -57,9 +57,9 @@ protocol Observer: AnyObject {
 ```swift
 class BagListViewModel: Observer {
     var products: [Product] = []
-    private let notifier: Notifier
+    private let notifier: ObserverManagingNotifier
 
-    init(notifier: Notifier) {
+    init(notifier: ObserverManagingNotifier) {
         self.notifier = notifier
         self.notifier.attachObserver(self)
     }
@@ -77,9 +77,9 @@ class BagListViewModel: Observer {
 
 class BagIconViewModel: Observer {
     var badgeCount: Int = 0
-    private let notifier: Notifier
+    private let notifier: ObserverManagingNotifier
 
-    init(notifier: Notifier) {
+    init(notifier: ObserverManagingNotifier) {
         self.notifier = notifier
         self.notifier.attachObserver(self)
     }
@@ -103,12 +103,9 @@ class BagIconViewModel: Observer {
 - `Notifier` defines the protocol for notifying observers.
 
 ```swift
-procotol ObserverManaging {
+protocol ObserverManagingNotifier {
     func attachObserver(_ observer: Observer)
     func detachObserver(_ observer: Observer)
-}
-
-protocol Notifier {
     func notify()
 }
 ```
@@ -122,13 +119,12 @@ protocol Notifier {
 - Sends a notification to its observers when its state changes.
 
 ```swift
-class WebSocketBagNotifier: Notifier, ObserverManaging {
+class WebSocketBagNotifier: ObserverManagingNotifier {
     private var observers: [Observer] = []
     private var products: [Product] = []
 
-    func testNotificationAfterAddingProduct(_ product: Product) {
+    func addProduct(_ product: Product) {
         self.products.append(product)
-        notify()
     }
 
     func attachObserver(_ observer: Observer) {
@@ -136,7 +132,7 @@ class WebSocketBagNotifier: Notifier, ObserverManaging {
     }
 
     func detachObserver(_ observer: Observer) {
-        observers.removeAll { $0 === observer }
+        // Remove observer from the list
     }
 
     func notify() {
@@ -162,9 +158,10 @@ let bagIconViewModel = BagIconViewModel(notifier: notifier)
 print(bagListViewModel.products) // []
 print(bagIconViewModel.badgeCount) // 0
 
-notifier.testNotificationAfterAddingProduct(
+notifier.addProduct(
     Product(name: "iPad Pro", price: 999.99)
 )
+notifier.notify()
 
 // Values after product added to the bag
 
