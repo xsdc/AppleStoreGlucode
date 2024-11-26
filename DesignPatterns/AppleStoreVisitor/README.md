@@ -32,11 +32,11 @@
 
 #### Element:
 
-The protocol that accepts a visitor for the objects we would like to add functionality to.
+Defines the protocol that accepts different types of discount visitors.
 
 ```swift
 protocol DiscountVisitorAccepting {
-    func accept(_ visitor: DiscountVisitor)
+    func acceptVisitor(_ visitor: DiscountVisitor)
 }
 ```
 
@@ -49,8 +49,8 @@ struct MacBookProProduct: DiscountVisitorAccepting {
     let id: String
     let price: Double
 
-    func accept(_ visitor: DiscountVisitor) {
-        visitor.acceptAndVisit(self)
+    func acceptVisitor(_ visitor: DiscountVisitor) {
+        visitor.visitMacBookPro(self)
     }
 }
 
@@ -58,8 +58,8 @@ struct VisionProProduct: DiscountVisitorAccepting {
     let id: String
     let price: Double
 
-    func accept(_ visitor: DiscountVisitor) {
-        visitor.acceptAndVisit(self)
+    func acceptVisitor(_ visitor: DiscountVisitor) {
+        visitor.visitVisionPro(self)
     }
 }
 ```
@@ -70,8 +70,8 @@ Defines the discount calculation methods for each product type.
 
 ```swift
 protocol DiscountVisitor {
-    func acceptAndVisit(_ macBookPro: MacBookProProduct)
-    func acceptAndVisit(_ visionPro: VisionProProduct)
+    func visitMacBookPro(_ macBookPro: MacBookProProduct)
+    func visitVisionPro(_ visionPro: VisionProProduct)
 }
 ```
 
@@ -86,28 +86,28 @@ protocol DiscountVisitor {
 ```swift
 class EducationDiscountVisitor: DiscountVisitor {
     private let discountPercentage = 0.25
-    private(set) var macBookProDiscount: Double = 0.0
-    private(set) var visionProDiscount: Double = 0.0
+    private(set) var macBookProDiscount = 0.0
+    private(set) var visionProDiscount = 0.0
 
-    func acceptAndVisit(_ macBookPro: MacBookProProduct) {
+    func visitMacBookPro(_ macBookPro: MacBookProProduct) {
         macBookProDiscount = macBookPro.price * discountPercentage
     }
 
-    func acceptAndVisit(_ visionPro: VisionProProduct) {
+    func visitVisionPro(_ visionPro: VisionProProduct) {
         visionProDiscount = visionPro.price * discountPercentage
     }
 }
 
 class EmployeeDiscountVisitor: DiscountVisitor {
     private let discountPercentage = 0.5
-    private(set) var macBookProDiscount: Double = 0.0
-    private(set) var visionProDiscount: Double = 0.0
+    private(set) var macBookProDiscount = 0.0
+    private(set) var visionProDiscount = 0.0
 
-    func acceptAndVisit(_ macBookPro: MacBookProProduct) {
+    func visitMacBookPro(_ macBookPro: MacBookProProduct) {
         macBookProDiscount = macBookPro.price * discountPercentage
     }
 
-    func acceptAndVisit(_ visionPro: VisionProProduct) {
+    func visitVisionPro(_ visionPro: VisionProProduct) {
         visionProDiscount = visionPro.price * discountPercentage
     }
 }
@@ -121,7 +121,7 @@ class EmployeeDiscountVisitor: DiscountVisitor {
 let educationDiscountVisitor = EducationDiscountVisitor()
 
 let macBookProProduct = MacBookProProduct(id: "1", price: 1000.00)
-macBookProProduct.accept(educationDiscountVisitor)
+macBookProProduct.acceptVisitor(educationDiscountVisitor)
 
 print(educationDiscountVisitor.macBookProDiscount) // 250.00
 
@@ -130,7 +130,7 @@ print(educationDiscountVisitor.macBookProDiscount) // 250.00
 let employeeDiscountVisitor = EmployeeDiscountVisitor()
 
 let visionProProduct = VisionProProduct(id: "1", price: 10000.00)
-visionProProduct.accept(employeeDiscountVisitor)
+visionProProduct.acceptVisitor(employeeDiscountVisitor)
 
 print(employeeDiscountVisitor.visionProDiscount) // 5000.00
 ```
