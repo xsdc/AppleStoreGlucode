@@ -51,7 +51,7 @@ protocol ShippingMethod {
 
 ```swift
 struct InStorePickupMethod: ShippingMethod {
-    let title: String = "In-Store Pickup"
+    let title = "In-Store Pickup"
 
     var deliveryDateEstimation: String {
         return "Same day"
@@ -63,7 +63,7 @@ struct InStorePickupMethod: ShippingMethod {
 }
 
 struct StandardShippingMethod: ShippingMethod {
-    let title: String = "Standard Shipping"
+    let title = "Standard Shipping"
 
     var deliveryDateEstimation: String {
         return "3-5 business days"
@@ -75,7 +75,7 @@ struct StandardShippingMethod: ShippingMethod {
 }
 
 struct ExpressShippingMethod: ShippingMethod {
-    let title: String = "Express Shipping"
+    let title = "Express Shipping"
     let baseShippingCost: Double
 
     var deliveryDateEstimation: String {
@@ -88,7 +88,7 @@ struct ExpressShippingMethod: ShippingMethod {
 }
 
 struct InternationalShippingMethod: ShippingMethod {
-    let title: String = "International Shipping"
+    let title = "International Shipping"
     let baseShippingCost: Double
 
     var deliveryDateEstimation: String {
@@ -108,8 +108,8 @@ struct InternationalShippingMethod: ShippingMethod {
 - This abstraction enables creating objects without specifying the exact class of the object that will be created.
 
 ```swift
-protocol ShippingMethodCreating {
-    static func makeShippingMethod(withBaseShippingCost cost: Double) -> ShippingMethod
+protocol ShippingMethodFactory {
+    func makeShippingMethod() -> ShippingMethod
 }
 ```
 
@@ -122,27 +122,31 @@ protocol ShippingMethodCreating {
 - This illustrates how the Factory Method pattern can be used to create different representations of an object based on the context.
 
 ```swift
-struct InStorePickupShippingMethodFactory: ShippingMethodCreating {
-    static func makeShippingMethod(withBaseShippingCost cost: Double = 0) -> ShippingMethod {
+struct InStorePickupShippingMethodFactory: ShippingMethodFactory {
+    func makeShippingMethod() -> ShippingMethod {
         return InStorePickupMethod()
     }
 }
 
-struct StandardShippingMethodFactory: ShippingMethodCreating {
-    static func makeShippingMethod(withBaseShippingCost cost: Double = 0) -> ShippingMethod {
+struct StandardShippingMethodFactory: ShippingMethodFactory {
+    func makeShippingMethod() -> ShippingMethod {
         return StandardShippingMethod()
     }
 }
 
-struct ExpressShippingMethodFactory: ShippingMethodCreating {
-    static func makeShippingMethod(withBaseShippingCost cost: Double) -> ShippingMethod {
-        return ExpressShippingMethod(baseShippingCost: cost)
+struct ExpressShippingMethodFactory: ShippingMethodFactory {
+    let baseShippingCost: Double
+
+    func makeShippingMethod() -> ShippingMethod {
+        return ExpressShippingMethod(baseShippingCost: baseShippingCost)
     }
 }
 
-struct InternationalShippingMethodFactory: ShippingMethodCreating {
-    static func makeShippingMethod(withBaseShippingCost cost: Double) -> ShippingMethod {
-        return InternationalShippingMethod(baseShippingCost: cost)
+struct InternationalShippingMethodFactory: ShippingMethodFactory {
+    let baseShippingCost: Double
+
+    func makeShippingMethod() -> ShippingMethod {
+        return InternationalShippingMethod(baseShippingCost: baseShippingCost)
     }
 }
 ```
@@ -150,22 +154,26 @@ struct InternationalShippingMethodFactory: ShippingMethodCreating {
 ## Example
 
 ```swift
-let inStorePickupShippingMethod = InStorePickupShippingMethodFactory.makeShippingMethod()
+let inStorePickupShippingFactory = InStorePickupShippingMethodFactory()
+let inStorePickupShippingMethod = inStorePickupShippingFactory.makeShippingMethod()
 print(inStorePickupShippingMethod.title) // In-Store Pickup
 print(inStorePickupShippingMethod.deliveryDateEstimation) // Same day
 print(inStorePickupShippingMethod.shippingCost(forWeight: 5)) // 0.0
 
-let standardShippingMethod = StandardShippingMethodFactory.makeShippingMethod()
+let standardShippingMethodFactory = StandardShippingMethodFactory()
+let standardShippingMethod = standardShippingMethodFactory.makeShippingMethod()
 print(standardShippingMethod.title) // Standard Shipping
 print(standardShippingMethod.deliveryDateEstimation) // 3-5 business days
 print(standardShippingMethod.shippingCost(forWeight: 5)) // 0.0
 
-let expressShippingMethod = ExpressShippingMethodFactory.makeShippingMethod(withBaseShippingCost: 5)
+let expressShippingMethodFactory = ExpressShippingMethodFactory(baseShippingCost: 5)
+let expressShippingMethod = expressShippingMethodFactory.makeShippingMethod()
 print(expressShippingMethod.title) // Express Shipping
 print(expressShippingMethod.deliveryDateEstimation) // 1-2 business days
 print(expressShippingMethod.shippingCost(forWeight: 5)) // 25.0
 
-let internationalShippingMethod = InternationalShippingMethodFactory.makeShippingMethod(withBaseShippingCost: 10)
+let internationalShippingMethodFactory = InternationalShippingMethodFactory(baseShippingCost: 10)
+let internationalShippingMethod = internationalShippingMethodFactory.makeShippingMethod()
 print(internationalShippingMethod.title) // International Shipping
 print(internationalShippingMethod.deliveryDateEstimation) // 7-14 business days
 print(internationalShippingMethod.shippingCost(forWeight: 5)) // 50.0
