@@ -12,7 +12,7 @@
 
 - The Builder pattern is used to construct objects piece by piece.
 
-- Each part of the object is configured via builder methods.
+- Each part of the object is configured via a method on a builder object.
 
 - We are able to provide different representations of the object using the same construction process.
 
@@ -51,7 +51,7 @@ struct AppleWatch {
 
 - Associated types are used here so that each concrete builder can define its own enum types for size, material, and band.
 
-- Compare the `Series10Builder` and `HèrmesSeries10Builder` builder enum types to see this in action.
+- Compare the `Series10Builder` and `HèrmesSeries10Builder` enum types to see this in action.
 
 - The protocol makes use of a fluent interface, allowing for the chaining of builder methods.
 
