@@ -83,19 +83,19 @@ struct BagWithAnalyticsProxy: ProductManaging {
     func addProduct(_ product: Product) {
         bag.addProduct(product)
 
-        logAnalyticsEvent(with: "productAddedFromBag")
+        logAnalyticsEvent(withID: "productAddedFromBag")
     }
 
     func removeProduct(_ product: Product) {
         bag.removeProduct(product)
 
-        logAnalyticsEvent(with: "productRemovedFromBag")
+        logAnalyticsEvent(withID: "productRemovedFromBag")
     }
 
     func clearAllProducts() {
         bag.clearAllProducts()
 
-        logAnalyticsEvent(with: "allProductsRemovedFromBag")
+        logAnalyticsEvent(withID: "allProductsRemovedFromBag")
     }
 
     private func logAnalyticsEvent(withID id: String) {
