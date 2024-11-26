@@ -1,105 +1,114 @@
-![Proxy](https://github.com/user-attachments/assets/4c4a662b-7dfd-46a1-9122-3fc488a30ca1)
+![Visitor](https://github.com/user-attachments/assets/e860e3c8-0d4e-4a54-b2c9-ab5def845aea)
 
 <br />
 
-# Proxy
+# Visitor
 
-> Provide a surrogate or placeholder for another object to control access to it.
+> Represent an operation to be performed on the elements of an object structure. Visitor lets you define a new operation without changing the classes of the elements on which it operates.
 >
 > _Reference: Design Patterns: Elements of Reusable Object-Oriented Software_
 
 ## Pattern overview
 
-- The Proxy pattern provides a layer that may be used to add behavior to a class.
+- The Visitor pattern provides a way of adding functionality to existing objects without modifying them.
 
-- Common uses include controlling access to a class, adding logging, or to add caching.
+- A visitor is created separately from the existing objects it operates on.
 
-- It is used in situations where you want to add behavior to a class without changing the class itself.
+- The visitor accesses an existing object, and performs the additional functionality.
 
 ## Problem statement
 
-- Apple Store users are able to add and remove items from their bag.
+- Assume we need to calculate discounts on various Apple Store products.
 
-- This is done in the `Bag` class.
+- The discounts have various types, such as education and employee discounts.
 
-- We would like to add event logging via an analytics service to the `Bag` class, but we do not want to modify the class itself.
+- Discount percentages can vary at any point, and additional discount types may be added in the future.
 
-- To avoid the issue of adding logging to the `Bag` class, we can use the Proxy pattern.
+- We would like to avoid the problem of modifying the product objects directly every time a new discount type is added, or the discount percentage changes.
 
-- The proxy pattern allows us to separate the analytics logic from the `Bag` class, conforming to the single responsibility principle.
+- The visitor pattern will allow us to separate discount types, and vary their discount percentages, without modifying the product classes, satifying the open/closed principle.
 
 ## Definitions
 
-#### Real subject:
+#### Element:
 
-- The object that we want to add behavior to.
-
-- In our scenario, this is an existing `Bag` class that we would like add analytics to.
+Defines the protocol that accepts different types of discount visitors.
 
 ```swift
-struct Bag: ProductManaging {
-    func addProduct(_ product: Product) {
-        print("Product added to bag")
-    }
+protocol DiscountVisitorAccepting {
+    func acceptVisitor(_ visitor: DiscountVisitor)
+}
+```
 
-    func removeProduct(_ product: Product) {
-        print("Product removed from bag")
-    }
+#### Concrete elements:
 
-    func clearAllProducts() {
-        print("Bag has been cleared")
+Concrete product types that accept a visitor according to the protocol defined above.
+
+```swift
+struct MacBookProProduct: DiscountVisitorAccepting {
+    let id: String
+    let price: Double
+
+    func acceptVisitor(_ visitor: DiscountVisitor) {
+        visitor.visitMacBookPro(self)
+    }
+}
+
+struct VisionProProduct: DiscountVisitorAccepting {
+    let id: String
+    let price: Double
+
+    func acceptVisitor(_ visitor: DiscountVisitor) {
+        visitor.visitVisionPro(self)
     }
 }
 ```
 
-#### Subject:
+#### Visitor:
 
-- Defines the common protocol for the real subject and the proxy.
-
-- By defining a common protocol, we can use the proxy in place of the real subject.
-
-- The proxy will be used to add the additional analytics behavior to the real subject `Bag`, without changing it.
+Defines the discount calculation methods for each product type.
 
 ```swift
-protocol ProductManaging {
-    func addProduct(_ product: Product)
-    func removeProduct(_ product: Product)
-    func clearAllProducts()
+protocol DiscountVisitor {
+    func visitMacBookPro(_ macBookPro: MacBookProProduct)
+    func visitVisionPro(_ visionPro: VisionProProduct)
 }
 ```
 
-#### Proxy:
+#### Concrete visitors:
 
-- Maintains a reference to the real subject, via dependency injection.
+- Implements the discount calculations for each product type.
 
-- Share a protocol with the real subject so that the proxy can be used anywhere the real subject is expected.
+- Education discount is 25%.
 
-- We can now add the analytics behavior to the proxy without changing the real subject, while still making use of its functionality.
+- Employee discount is 50%.
 
 ```swift
-struct BagWithAnalyticsProxy: ProductManaging {
-    let bag: ProductManaging
+class EducationDiscountVisitor: DiscountVisitor {
+    private let discountPercentage = 0.25
+    private(set) var macBookProDiscount = 0.0
+    private(set) var visionProDiscount = 0.0
 
-    func addProduct(_ product: Product) {
-        bag.addProduct(product)
-
-        logAnalyticsEvent(with: "productAddedFromBag")
+    func visitMacBookPro(_ macBookPro: MacBookProProduct) {
+        macBookProDiscount = macBookPro.price * discountPercentage
     }
 
-    func removeProduct(_ product: Product) {
-        bag.removeProduct(product)
+    func visitVisionPro(_ visionPro: VisionProProduct) {
+        visionProDiscount = visionPro.price * discountPercentage
+    }
+}
 
-        logAnalyticsEvent(with: "productRemovedFromBag")
+class EmployeeDiscountVisitor: DiscountVisitor {
+    private let discountPercentage = 0.5
+    private(set) var macBookProDiscount = 0.0
+    private(set) var visionProDiscount = 0.0
+
+    func visitMacBookPro(_ macBookPro: MacBookProProduct) {
+        macBookProDiscount = macBookPro.price * discountPercentage
     }
 
-    func clearAllProducts() {
-        bag.clearAllProducts()
-
-        logAnalyticsEvent(with: "allProductsRemovedFromBag")
-    }
-
-    private func logAnalyticsEvent(with id: String) {
-        print("Analytics event logged with identifier: \(id)")
+    func visitVisionPro(_ visionPro: VisionProProduct) {
+        visionProDiscount = visionPro.price * discountPercentage
     }
 }
 ```
@@ -107,33 +116,21 @@ struct BagWithAnalyticsProxy: ProductManaging {
 ## Example
 
 ```swift
-struct Product {
-    let name: String
-    let price: Double
-}
+// Education discount for MacBook Pro
 
-let bag = Bag()
-let bagWithAnalyticsProxy = BagWithAnalyticsProxy(bag: bag)
+let educationDiscountVisitor = EducationDiscountVisitor()
 
-bagWithAnalyticsProxy.addProduct(
-    Product(name: "iPhone", price: 999.99)
-)
+let macBookProProduct = MacBookProProduct(id: "1", price: 1000.00)
+macBookProProduct.acceptVisitor(educationDiscountVisitor)
 
-// Output:
-// Product added to bag
-// Analytics event logged with identifier: productAddedFromBag
+print(educationDiscountVisitor.macBookProDiscount) // 250.00
 
-bagWithAnalyticsProxy.removeProduct(
-    Product(name: "iPhone", price: 999.99)
-)
+// Employee discount for Vision Pro
 
-// Output:
-// Product removed from bag
-// Analytics event logged with identifier: productRemovedFromBag
+let employeeDiscountVisitor = EmployeeDiscountVisitor()
 
-bagWithAnalyticsProxy.clearAllProducts()
+let visionProProduct = VisionProProduct(id: "1", price: 10000.00)
+visionProProduct.acceptVisitor(employeeDiscountVisitor)
 
-// Output:
-// Bag has been cleared
-// Analytics event logged with identifier: allProductsRemovedFromBag
+print(employeeDiscountVisitor.visionProDiscount) // 5000.00
 ```
