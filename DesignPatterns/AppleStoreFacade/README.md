@@ -34,29 +34,6 @@
 
 ## Definitions
 
-#### Facade:
-
-- Maintains references to subsystem classes.
-
-- Delegates work to subsystem classes.
-
-```swift
-struct NotificationFacade {
-    private let mailNotificationAPI = MailNotificationAPI()
-    private let messageNotificationAPI = MessageNotificationAPI()
-    private let settings = Settings(notificationType: .mail)
-
-    func send(text: String) {
-        switch settings.notificationType {
-        case .mail:
-            mailNotificationAPI.sendMailWithText(text)
-        case .message:
-            messageNotificationAPI.sendMessageWithText(text)
-        }
-    }
-}
-```
-
 #### Subsystem classes:
 
 - Implements the functionality of the subsystems.
@@ -82,6 +59,29 @@ struct MailNotificationAPI {
 struct MessageNotificationAPI {
     func send(text: String) {
         print("Message sent with text: \(text)")
+    }
+}
+```
+
+#### Facade:
+
+- Maintains references to subsystem classes.
+
+- Delegates work to subsystem classes.
+
+```swift
+struct NotificationFacade {
+    private let mailNotificationAPI = MailNotificationAPI()
+    private let messageNotificationAPI = MessageNotificationAPI()
+    private let settings = Settings(notificationType: .mail)
+
+    func send(text: String) {
+        switch settings.notificationType {
+        case .mail:
+            mailNotificationAPI.sendMailWithText(text)
+        case .message:
+            messageNotificationAPI.sendMessageWithText(text)
+        }
     }
 }
 ```
