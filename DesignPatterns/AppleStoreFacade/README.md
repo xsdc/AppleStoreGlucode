@@ -30,6 +30,8 @@
 
 - The Facade pattern allows us to combine these classes into a single class that can handle the notification processing.
 
+- This is all done without exposing the complexity of the underlying objects.
+
 ## Definitions
 
 #### Facade:
