@@ -10,61 +10,83 @@
 
 ## Pattern overview
 
-- The Facade pattern is a structural pattern that provides a simplified interface to a complex system of classes.
-- For example, a Mac has many subsystems such as CPU, memory, storage, etc.
-- The Facade pattern provides a unified interface to these subsystems.
+- The Facade pattern provides a simple way to complete tasks where many underlying parts are needed.
+
+- These parts are encapsulated in an object, which provides a simple interface to perform the tasks.
 
 ## Problem statement
 
-- We have services that are separate but often used together.
-- By providing a simple interface to these services, we can reduce the complexity of the client code.
-- This pattern is also useful for testing the subsystems in isolation and how they may interact with each other.
+- Once orders are processed on the Apple Store, notifications are sent to the customer.
 
-## Domain application
+- At the moment, this is initiated on the server. Let's imagine that we are tasked to implement notification processing from the app.
 
-Facade:
+- Once an order is processed, we need to send a notification to the customer.
 
-- Knows which subsystem classes are responsible for a request.
-- Delegates client requests to appropriate subsystem objects.
+- We have two notfication APIs that we have implemented: `MailNotificationAPI` and `MessageNotificationAPI`.
+
+- We also have a `Settings` class that handles all the settings for the app, including the notification type selected by the user.
+
+- Once an order is processed, we want to avoid having to call the `MailNotificationAPI` or `MessageNotificationAPI` directly.
+
+- The Facade pattern allows us to combine these classes into a single class that can handle the notification processing.
+
+## Definitions
+
+#### Facade:
+
+- Maintains references to subsystem classes.
+
+- Delegates work to subsystem classes.
 
 ```swift
-class OrderProccessor {
-    private let bag: Bag
-    private let paymentService: PaymentService
+struct NotificationFacade {
+    private let mailNotificationAPI = MailNotificationAPI()
+    private let messageNotificationAPI = MessageNotificationAPI()
+    private let settings = Settings(notificationType: .mail)
 
-    init(bag: Bag, paymentService: PaymentService) {
-        self.bag = bag
-        self.paymentService = paymentService
-    }
-
-    func processOrder() {
-        paymentService.processPaymentWithBag(bag)
+    func send(text: String) {
+        switch settings.notificationType {
+        case .mail:
+            mailNotificationAPI.sendMailWithText(text)
+        case .message:
+            messageNotificationAPI.sendMessageWithText(text)
+        }
     }
 }
 ```
 
-Subsystem classes:
+#### Subsystem classes:
 
-- Implement subsystem functionality.
-- Handle work assigned by the Facade object.
-- Have no knowledge of the facade; that is, they keep no references to it.
+- Implements the functionality of the subsystems.
+
+- They are decoupled from the Facade object.
 
 ```swift
-struct Bag {
-    var products: [Product]
-
-    addProduct(_ product: Product) {
-        products.append(product)
+struct Settings {
+    enum NotificationType {
+        case mail
+        case message
     }
 
-    removeProduct(_ product: Product) {
-        products.removeAll { $0.id == product.id }
+    var notificationType: NotificationType
+}
+
+struct MailNotificationAPI {
+    func send(text: String) {
+        print("Mail sent with text: \(text)")
     }
 }
 
-class PaymentService {
-    func processPaymentWithBag(_ bag: Bag) {
-        // Process payment
+struct MessageNotificationAPI {
+    func send(text: String) {
+        print("Message sent with text: \(text)")
     }
 }
+```
+
+## Example
+
+```swift
+let notificationFacade = NotificationFacade()
+notificationFacade.send(text: "Order processed.") // Mail sent with text: Order processed.
 ```
