@@ -26,7 +26,7 @@
 
 - We also have a `Settings` class that handles all the settings for the app, including the notification type selected by the user.
 
-- Once an order is processed, we want to avoid having to call the `MailNotificationAPI` or `MessageNotificationAPI` directly.
+- Once an order is processed, we want to avoid exposing the objects we need to use to send a notification: `Settings`, `MailNotificationAPI`, and `MessageNotificationAPI`.
 
 - The Facade pattern allows us to combine these classes into a single class that can handle the notification processing.
 
