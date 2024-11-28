@@ -10,88 +10,159 @@
 
 ## Pattern overview
 
-- The State pattern allows object behavioral change based on its current state. This is often seen in applications where an object can be in multiple states, and each state has different behaviors associated with it.
-- For example, a `MusicPlayerButton` object can be in multiple states, such as `PlayingState`, `PausedState`, and `StoppedState`, each with its own behavior.
-- The State pattern encapsulates the state-specific behavior in separate classes, allowing for cleaner and more maintainable code.
+- The State pattern is concerned with keeping track of the state of an object and changing its behavior based on that state.
+
+- To illustrate, consider a video player that can be in one of two states: playing or paused.
+
+- The play/pause button should behave differently based on the current state of the player.
+
+- Play when paused, and pause when playing.
 
 ## Problem statement
 
-- The State pattern can be applied to the Apple Store to manage the state of an order. An order can be in multiple states, such as `Pending`, `Shipped`, and `Cancelled`, each with its own behavior.
-- The `OrderState` protocol defines the functions that illustrates how calling the same function can have different behavior based on the state of the order.
-- The `NotificationService` implementation illustrates how the current state can trigger different messages to be sent.
+- We would like to implement connection status handling for Apple Store product views.
 
-## Domain application
+- The view models should be able to observe the reachability status and update their state accordingly.
 
-Context:
+- For simplicity, we will start with implementating three states: initial, connection reachable, and connection unreachable.
 
-- Defines the interface of interest to clients.
-- Maintains an instance of a ConcreteState subclass that defines the current state.
+- We may encounter the problem of having multiple if-else statements to manage the state transitions.
+
+- When adding more states in the future, the code will become complex and difficult to maintain.
+
+- The State pattern helps us manage state changes in a more modular and maintainable way.
+
+- We are able to have tailored behavior for each state update, and can easily add new states without modifying existing code.
+
+## Definitions
+
+#### Context:
+
+- Maintains a reference to the current state.
+
+- Responsible for delegating the state-specific behavior to the current state object.
+
+- The functionality may vary based on the current state, even when the same method is called.
 
 ```swift
-class Order {
-    let id: String
-    let notificationService: NotificationService
-    var orderState: OrderState
+class ProductViewModel {
+    var showNoInternetConnectionAlert = false
+    var requests: [Request] = []
+    private var state: State = InitialState()
 
-    init(id: String, notificationService: NotificationService) {
-        self.id = id
-        self.notificationService = notificationService
-        self.orderState = PendingOrderState()
-    }
-
-    func update(state: OrderState) {
-        orderState = state
+    func updateConnection(toReachable isReachable: Bool) {
+        if isReachable {
+            state.connectionDidBecomeReachable(for: self)
+            state = ConnectionReachableState()
+        }
+        else {
+            state.connectionDidBecomeUnreachable(for: self)
+            state = ConnectionUnreachableState()
+        }
     }
 }
 ```
 
-State:
+#### State:
 
-Defines an interface for encapsulating the behavior associated with a particular state of the Context.
+Defines the protocol for the state transitions.
 
 ```swift
-protocol OrderState {
-    func shipOrder()
-    func cancelOrder()
+protocol State {
+    func connectionDidBecomeReachable(for viewModel: ProductViewModel)
+    func connectionDidBecomeUnreachable(for viewModel: ProductViewModel)
 }
 ```
 
-ConcreteState subclasses:
+#### Concrete state subclasses:
 
-Each subclass implements a behavior associated with a state of the Context.
+- Implementations for the state updates.
+
+- We use the State pattern to manage the state of the `ProductViewModel` object based on the reachability status.
 
 ```swift
-class PendingOrderState: OrderState {
-    func shipOrder(order: Order) {
-        order.notificationService.sendMessage("Order #\(order.id) has been shipped.")
-        order.update(state: ShippedOrderState(order: order))
+class InitialState: State {
+    func connectionDidBecomeReachable(for viewModel: ProductViewModel) {
+        // Update view model
+        viewModel.showNoInternetConnectionAlert = false
     }
 
-    func cancelOrder(order: Order) {
-        order.notificationService.sendMessage("Order #\(order.id) has been cancelled.")
-        order.update(state: CancelledOrderState(order: order))
+    func connectionDidBecomeUnreachable(for viewModel: ProductViewModel) {
+        // Update view model
+        viewModel.showNoInternetConnectionAlert = true
+
+        // Resume all requests
+        for index in viewModel.requests.indices {
+            viewModel.requests[index].isSuspended = true
+        }
     }
 }
 
-class ShippedOrderState: OrderState {
-    func shipOrder(order: Order) {
-        order.notificationService.sendMessage("Order #\(order.id) is already on the way.")
+class ConnectionUnreachableState: State {
+    func connectionDidBecomeReachable(for viewModel: ProductViewModel) {
+        // Update view model
+        viewModel.showNoInternetConnectionAlert = false
+
+        // Resume all requests
+        for index in viewModel.requests.indices {
+            viewModel.requests[index].isSuspended = false
+        }
     }
 
-    func cancelOrder(order: Order) {
-        order.notificationService.sendMessage("Order #\(order.id) has been cancelled, and will return to Apple.")
-        order.update(state: CancelledOrderState(order: order))
+    func connectionDidBecomeUnreachable(for viewModel: ProductViewModel) {
+        // No action needed
     }
 }
 
-class CancelledOrderState: OrderState {
-    func shipOrder(order: Order) {
-        order.notificationService.sendMessage("Order #\(order.id) has been shipped.")
-        order.update(state: ShippedOrderState(order: order))
+class ConnectionReachableState: State {
+    func connectionDidBecomeReachable(for viewModel: ProductViewModel) {
+        // No action needed
     }
 
-    func cancelOrder(order: Order) {
-        order.notificationService.sendMessage("Order #\(order.id) has already been cancelled.")
+    func connectionDidBecomeUnreachable(for viewModel: ProductViewModel) {
+        // Update view model
+        viewModel.showNoInternetConnectionAlert = true
+
+        // Suspend all requests
+        for index in viewModel.requests.indices {
+            viewModel.requests[index].isSuspended = true
+        }
     }
 }
+```
+
+## Example
+
+```swift
+struct Request {
+    let id: Int
+    var isSuspended: Bool
+}
+
+let viewModel = ProductViewModel() // InitialState assigned
+viewModel.requests = [
+    Request(id: 1, isSuspended: false),
+    Request(id: 2, isSuspended: false)
+]
+
+print(viewModel.showNoInternetConnectionAlert) // false
+print(viewModel.requests) // [Request(id: 1, isSuspended: false), Request(id: 2, isSuspended: false)]
+
+// InitialState.connectionDidBecomeUnreachable called, ConnectionUnreachableState assigned
+viewModel.updateConnection(toReachable: false)
+
+print(viewModel.showNoInternetConnectionAlert) // true
+print(viewModel.requests) // [Request(id: 1, isSuspended: true), Request(id: 2, isSuspended: true)]
+
+// ConnectionUnreachableState.connectionDidBecomeReachable called, ConnectionReachableState assigned
+viewModel.updateConnection(toReachable: true)
+
+print(viewModel.showNoInternetConnectionAlert) // false
+print(viewModel.requests) // [Request(id: 1, isSuspended: false), Request(id: 2, isSuspended: false)]
+
+// ConnectionReachableState.connectionDidBecomeUnreachable called, ConnectionUnreachableState assigned
+viewModel.updateConnection(toReachable: false)
+
+print(viewModel.showNoInternetConnectionAlert) // true
+print(viewModel.requests) // [Request(id: 1, isSuspended: true), Request(id: 2, isSuspended: true)]
 ```
