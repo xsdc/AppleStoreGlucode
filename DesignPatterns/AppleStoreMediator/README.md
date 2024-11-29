@@ -10,114 +10,112 @@
 
 ## Pattern overview
 
-- The mediator pattern defines an object that encapsulates how a set of objects interact.
-- It promotes loose coupling by keeping objects from referring to each other explicitly, and it lets you vary their interaction independently.
-- For example, in a messaging application, the mediator object can manager the list of users and their messages.
+- The Mediator pattern is used to facilitate communication between objects in a system.
+
+- It defines a protocol that encapsulates how a set of objects interact.
+
+- This promotes loose coupling by keeping objects from referring to each other explicitly.
 
 ## Problem statement
 
-- On a product page, we would like to keep the product price summary in sync with the product configuration.
-- The product configuration can be updated by the user, and the product price summary should be updated accordingly.
+- When configuring a MacBook for purchase on the Apple Store, two components are present: the product configuration and the product price summary.
 
-## Domain application
+- The product configuration is a part of the main body of the view, and the product summary is a footer that displays the total price of the product, among other details.
 
-Mediator:
+- If all the functionality for both the product configuration and the product summary is contained in a single view, it can lead to a large and complex view.
 
-Defines an interface for communicating with Colleague objects.
+- While communicatio between object may be easier, it can lead to tight coupling between the two components.
+
+- Instead, we want a modular design that allows for decoupling of the product configuration and the product summary.
+
+- The Mediator pattern facilitates communication between the product configuration and the product summary while keeping them decoupled.
+
+## Definitions
+
+#### Mediator:
+
+- Defines the protocol we'll use to communicate price updates between the product configuration and the product summary.
 
 ```swift
-protocol ConfigurationManager {
-    func displayTypeChanged(_ type: String)
-    func chipTypeChanged(_ type: String)
-    func memoryTypeChanged(_ type: String)
-    func storageTypeChanged(_ type: String)
+protocol PriceUpdating {
+    func totalChanged(toPrice total: Double)
 }
 ```
 
-ConcreteMediator:
+#### Concrete mediators:
 
-- Implements cooperative behavior by coordinating Colleague objects.
 - Knows and maintains its colleagues.
 
+- Facilitates communication between them by implementing the `PriceUpdating` protocol.
+
 ```swift
-class MacBookProProduct: ConfigurationManager {
-    let productConfiguration: ProductConfiguration
-    let productPriceSummary: ProductPriceSummary
+class ProductView: PriceUpdating {
+    private let configurationView: ProductConfigurationView
+    private let summaryView: ProductSummaryView
 
-    init(bag: Bag, catalog: Catalog) {
-        self.bag = bag
-        self.catalog = catalog
+    init(configurationView: ProductConfigurationView, summaryView: ProductSummaryView) {
+        self.configurationView = configurationView
+        self.summaryView = summaryView
+        self.configurationView.assignPriceUpdater(self)
     }
 
-    func displayTypeChanged(_ type: String) {
-        productPriceSummary.updateDisplayType(type)
-    }
-
-    func chipTypeChanged(_ type: String) {
-        productPriceSummary.updateChipType(type)
-    }
-
-    func memoryTypeChanged(_ type: String) {
-        productPriceSummary.updateMemoryType(type)
-    }
-
-    func storageTypeChanged(_ type: String) {
-        productPriceSummary.updateStorageType(type)
+    func totalChanged(toPrice total: Double) {
+        summaryView.updateTotal(toPrice: total)
     }
 }
 ```
 
-Colleague classes:
+#### Colleague classes:
 
-- Each Colleague class knows its Mediator object.
-- Each colleague communicates with its mediator whenever it would have otherwise communicated with another colleague.
+- They maintain a reference to their Mediator object if they need to communicate with other Colleague objects.
+
+- In our case, we have one way communication from the `ProductConfigurationView` to the `ProductSummaryView`.
+
+- The `ProductConfigurationView` calls the `totalChanged(toPrice:)` method on the `PriceUpdating` protocol.
+
+- In our case, that is implemented by the `ProductView` class.
+
+- The `ProductView` then calls the `updateTotal(toPrice:)` method on the `ProductSummaryView`.
 
 ```swift
-class ProductPriceSummary {
-    let configurationManager: ConfigurationManager
+class ProductSummaryView {
+    private(set) var price: Double
 
-    init(configurationManager: ConfigurationManager) {
-        self.configurationManager = configurationManager
+    init(price: Double, deliveryEstimate: String) {
+        self.price = price
     }
 
-    func updateDisplayType(_ type: String) {
-        // Update display type
-    }
-
-    func updateChipType(_ type: String) {
-        // Update chip type
-    }
-
-    func updateMemoryType(_ type: String) {
-        // Update memory type
-    }
-
-    func updateStorageType(_ type: String) {
-        // Update storage type
+    func updateTotal(toPrice price: Double) {
+        self.price = price
     }
 }
 
-class ProductConfiguration {
-    let configurationManager: ConfigurationManager
+class ProductConfigurationView {
+    private var priceUpdater: PriceUpdating?
 
-    init(configurationManager: ConfigurationManager) {
-        self.configurationManager = configurationManager
+    func assignPriceUpdater(_ priceUpdater: PriceUpdating) {
+        self.priceUpdater = priceUpdater
     }
 
-    func displayTypeChanged(_ type: String) {
-        configurationManager.displayTypeChanged(type)
-    }
-
-    func chipTypeChanged(_ type: String) {
-        configurationManager.chipTypeChanged(type)
-    }
-
-    func memoryTypeChanged(_ type: String) {
-        configurationManager.memoryTypeChanged(type)
-    }
-
-    func storageTypeChanged(_ type: String) {
-        configurationManager.storageTypeChanged(type)
+    func configurationChanged(withPrice price: Double) {
+        priceUpdater?.totalChanged(toPrice: price)
     }
 }
+```
+
+## Example
+
+```swift
+let configurationView = ProductConfigurationView()
+let summaryView = ProductSummaryView(price: 999.99, deliveryEstimate: "1-2 days")
+let productView = ProductView(configurationView: configurationView, summaryView: summaryView)
+
+// Initial price
+print(summaryView.price) // 999.99
+
+// Update price via the configuration view
+configurationView.configurationChanged(withPrice: 1099.99)
+
+// New price should be reflected in the summary view
+print(summaryView.price) // 1099.99
 ```
