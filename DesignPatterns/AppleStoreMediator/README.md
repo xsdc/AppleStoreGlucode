@@ -1,4 +1,4 @@
-![Mediator](https://github.com/user-attachments/assets/3c84efaa-f222-4a39-a647-9cf0b220a394)
+![Mediator](https://github.com/user-attachments/assets/5719db2b-d584-4ae7-a9b0-1d16deb1285d)
 
 <br />
 
