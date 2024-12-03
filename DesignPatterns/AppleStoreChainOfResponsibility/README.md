@@ -42,9 +42,9 @@
 
 ```swift
 protocol Handler {
-    var nextHandler: Handler? { get }
+    var next: Handler? { get }
 
-    func handleRequest(_ request: Request, completion: @escaping (String) -> Void)
+    func handle(request: Request, completion: @escaping (String) -> Void)
 }
 
 struct Request {
@@ -68,18 +68,18 @@ struct Request {
 
 ```swift
 class StockCheckHandler: Handler {
-    private(set) var nextHandler: Handler?
+    private(set) var next: Handler?
 
-    init(nextHandler: Handler?) {
-        self.nextHandler = nextHandler
+    init(next: Handler?) {
+        self.next = next
     }
 
-    func handleRequest(_ request: Request, completion: @escaping (String) -> Void) {
+    func handle(request: Request, completion: @escaping (String) -> Void) {
         let isInStock = Bool.random()
 
         if isInStock {
-            completion("Product  is in stock")
-            nextHandler?.handleRequest(request, completion: completion)
+            completion("Product \(request.productId) is in stock")
+            next?.handle(request: request, completion: completion)
         } else {
             completion("Product \(request.productId) is out of stock")
         }
@@ -87,18 +87,18 @@ class StockCheckHandler: Handler {
 }
 
 class AddToBagHandler: Handler {
-    private(set) var nextHandler: Handler?
+    private(set) var next: Handler?
 
-    init(nextHandler: Handler?) {
-        self.nextHandler = nextHandler
+    init(next: Handler?) {
+        self.next = next
     }
 
-    func handleRequest(_ request: Request, completion: @escaping (String) -> Void) {
+    func handle(request: Request, completion: @escaping (String) -> Void) {
         let addToBagSucceeded = Bool.random()
 
         if addToBagSucceeded {
             completion("Product \(request.productId) added to bag")
-            nextHandler?.handleRequest(request, completion: completion)
+            next?.handle(request: request, completion: completion)
         } else {
             completion("Failed to add product \(request.productId) to bag")
         }
@@ -106,13 +106,13 @@ class AddToBagHandler: Handler {
 }
 
 class LoggingHandler: Handler {
-    private(set) var nextHandler: Handler?
+    private(set) var next: Handler?
 
-    init(nextHandler: Handler?) {
-        self.nextHandler = nextHandler
+    init(next: Handler?) {
+        self.next = next
     }
 
-    func handleRequest(_ request: Request, completion: @escaping (String) -> Void) {
+    func handle(request: Request, completion: @escaping (String) -> Void) {
         completion("Analytics event logged for product \(request.productId)")
         completion("Request completed")
     }
@@ -122,12 +122,12 @@ class LoggingHandler: Handler {
 ## Example
 
 ```swift
-let loggingHandler = LoggingHandler(nextHandler: nil)
-let addToBagHandler = AddToBagHandler(nextHandler: loggingHandler)
-let stockCheckHandler = StockCheckHandler(nextHandler: addToBagHandler)
+let loggingHandler = LoggingHandler(next: nil)
+let addToBagHandler = AddToBagHandler(next: loggingHandler)
+let stockCheckHandler = StockCheckHandler(next: addToBagHandler)
 
 let request = Request(productId: "1234")
-stockCheckHandler.handleRequest(request) { result in
+stockCheckHandler.handle(request: request) { result in
     print(result)
 }
 ```
