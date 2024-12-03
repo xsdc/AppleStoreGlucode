@@ -38,10 +38,10 @@
 
 ```swift
 protocol ProductComponentRenderer {
-    func renderTitleViewWithProduct(_ product: Product) -> View
-    func renderPriceViewWithProduct(_ product: Product) -> View
-    func renderCarouselViewWithProduct(_ product: Product) -> View
-    func renderTechSpecsViewWithProduct(_ product: Product) -> View
+    func renderTitleView(for product: Product) -> ComponentView
+    func renderPriceView(for product: Product) -> ComponentView
+    func renderCarouselView(for product: Product) -> ComponentView
+    func renderTechSpecsView(for product: Product) -> ComponentView
 }
 ```
 
@@ -54,39 +54,39 @@ protocol ProductComponentRenderer {
 - The fonts, colors, and layout can be adjusted as needed.
 
 ````swift
-class iPhoneProductComponentRenderer: ProductComponentRenderer {
-    func renderTitleViewWithProduct(_ product: Product) -> View {
-        return View(name: "Title view for iPhone")
+struct iPhoneProductComponentRenderer: ProductComponentRenderer {
+    func renderTitleView(for product: Product) -> ComponentView {
+        return ComponentView(name: "Title view for iPhone")
     }
 
-    func renderPriceViewWithProduct(_ product: Product) -> View {
-        return View(name: "Price view for iPhone")
+    func renderPriceView(for product: Product) -> ComponentView {
+        return ComponentView(name: "Price view for iPhone")
     }
 
-    func renderCarouselViewWithProduct(_ product: Product) -> View {
-        return View(name: "Carousel view for iPhone")
+    func renderCarouselView(for product: Product) -> ComponentView {
+        return ComponentView(name: "Carousel view for iPhone")
     }
 
-    func renderTechSpecsViewWithProduct(_ product: Product) -> View {
-        return View(name: "Tech specs view for iPhone")
+    func renderTechSpecsView(for product: Product) -> ComponentView {
+        return ComponentView(name: "Tech specs view for iPhone")
     }
 }
 
-class iPadProductComponentRenderer: ProductComponentRenderer {
-    func renderTitleViewWithProduct(_ product: Product) -> View {
-        return View(name: "Title view for iPad")
+struct iPadProductComponentRenderer: ProductComponentRenderer {
+    func renderTitleView(for product: Product) -> ComponentView {
+        return ComponentView(name: "Title view for iPad")
     }
 
-    func renderPriceViewWithProduct(_ product: Product) -> View {
-        return View(name: "Price view for iPad")
+    func renderPriceView(for product: Product) -> ComponentView {
+        return ComponentView(name: "Price view for iPad")
     }
 
-    func renderCarouselViewWithProduct(_ product: Product) -> View {
-        return View(name: "Carousel view for iPad")
+    func renderCarouselView(for product: Product) -> ComponentView {
+        return ComponentView(name: "Carousel view for iPad")
     }
 
-    func renderTechSpecsViewWithProduct(_ product: Product) -> View {
-        return View(name: "Tech specs view for iPad")
+    func renderTechSpecsView(for product: Product) -> ComponentView {
+        return ComponentView(name: "Tech specs view for iPad")
     }
 }
 ````
@@ -98,11 +98,11 @@ class iPadProductComponentRenderer: ProductComponentRenderer {
 - Based on the component renderer, we are able to generate various visual representations of the product.
 
 ```swift
-protocol ProductView {
+protocol RenderableProductView {
     var product: Product { get }
     var componentRenderer: ProductComponentRenderer { get }
 
-    mutating func render()
+    func render()
 }
 ```
 
@@ -115,34 +115,45 @@ protocol ProductView {
 - Variations can be created as needed based on what the component renderer makes available.
 
 ```swift
-struct AppleWatchSummaryView: ProductView {
-    var views: [View] = []
+class AppleWatchSummaryView: RenderableProductView {
+    private(set) var views: [ComponentView] = []
     private(set) var product: Product
     private(set) var componentRenderer: ProductComponentRenderer
 
-    mutating func render() {
-        views.append(componentRenderer.renderTitleViewWithProduct(product))
-        views.append(componentRenderer.renderPriceViewWithProduct(product))
-        views.append(componentRenderer.renderCarouselViewWithProduct(product))
+    init(product: Product, componentRenderer: ProductComponentRenderer) {
+        self.product = product
+        self.componentRenderer = componentRenderer
+    }
+
+    func render() {
+        views.append(componentRenderer.renderTitleView(for: product))
+        views.append(componentRenderer.renderPriceView(for: product))
+        views.append(componentRenderer.renderCarouselView(for: product))
     }
 }
 
-struct AppleWatchTechSpecsView: ProductView {
-    var views: [View] = []
+class AppleWatchTechSpecsView: RenderableProductView {
+    private(set) var views: [ComponentView] = []
     private(set) var product: Product
     private(set) var componentRenderer: ProductComponentRenderer
 
-    mutating func render() {
-        views.append(componentRenderer.renderTitleViewWithProduct(product))
-        views.append(componentRenderer.renderPriceViewWithProduct(product))
-        views.append(componentRenderer.renderTechSpecsViewWithProduct(product))
+    init(product: Product, componentRenderer: ProductComponentRenderer) {
+        self.product = product
+        self.componentRenderer = componentRenderer
+    }
 
+    func render() {
+        views.append(componentRenderer.renderTitleView(for: product))
+        views.append(componentRenderer.renderPriceView(for: product))
+        views.append(componentRenderer.renderTechSpecsView(for: product))
+    }
+}
 ```
 
 ## Example
 
 ```swift
-struct View {
+struct ComponentView {
     let name: String
 }
 
