@@ -40,14 +40,11 @@
 
 #### Iterator:
 
-- Defines the operation to traverse elements.
+Defines the operation to traverse elements.
 
-- Swift provides the `IteratorProtocol` protocol to define the `next()` method.
-
-- This allows us to loop through the elements of a collection using built-in Swift constructs like `for-in` loops.
 
 ```swift
-protocol CatalogIterator: IteratorProtocol {
+protocol CatalogIterator {
     func next() -> Category?
 }
 ```
@@ -60,34 +57,34 @@ protocol CatalogIterator: IteratorProtocol {
 
 ```swift
 class ArrayCatalogIterator: CatalogIterator {
-    private let categories: [Category]
+    private let categories: [String]
     private var index = 0
 
-    init(categories: [Category]) {
+    init(categories: [String]) {
         self.categories = categories
     }
 
     func next() -> Category? {
         guard index < categories.count else { return nil }
-        let category = categories[index]
+        let category = Category(name: categories[index])
         index += 1
         return category
     }
 }
 
 class DictionaryCatalogIterator: CatalogIterator {
-    private let categories: [Category]
+    private let categories: [String]
     private var index = 0
 
     init(categories: [String: String]) {
         self.categories = categories
             .sorted { $0.key < $1.key }
-            .map { Category(name: $0.value) }
+            .map { $0.value }
     }
 
     func next() -> Category? {
         guard index < categories.count else { return nil }
-        let category = categories[index]
+        let category = Category(name: categories[index])
         index += 1
         return category
     }
@@ -100,7 +97,7 @@ Defines an interface for creating an Iterator object.
 
 ```swift
 protocol CatalogCollection {
-    func makeIterator() -> Iterator
+    func makeIterator() -> CatalogIterator
 }
 ```
 
@@ -112,13 +109,13 @@ protocol CatalogCollection {
 
 ```swift
 struct ArrayCatalog: CatalogCollection {
-    private let categories: [Category]
+    private let categories: [String]
 
-    init(categories: [Category]) {
+    init(categories: [String]) {
         self.categories = categories
     }
 
-    func makeIterator() -> ArrayCatalogIterator {
+    func makeIterator() -> CatalogIterator {
         return ArrayCatalogIterator(categories: categories)
     }
 }
@@ -130,45 +127,51 @@ class DictionaryCatalog: CatalogCollection {
         self.categories = categories
     }
 
-    func makeIterator() -> DictionaryCatalogIterator {
+    func makeIterator() -> CatalogIterator {
         return DictionaryCatalogIterator(categories: categories)
     }
 }
 ```
 
-## Example
+## Example: Array
 
 ```swift
 struct Category {
     let name: String
 }
 
-let categories = [
-    Category(name: "iPhone"),
-    Category(name: "iPad"),
-    Category(name: "Mac"),
-    Category(name: "Watch")
-]
+let categories = ["iPhone", "iPad", "Mac", "Watch"]
 let arrayCatalog = ArrayCatalog(categories: categories)
-let objectIterator = arrayCatalog.makeIterator()
+let arrayIterator = arrayCatalog.makeIterator()
 
-for category in arrayCatalog {
+while let category = arrayIterator.next() {
     print(category.name)
 }
-// Output: iPhone, iPad, Mac, Watch
+// Output:
+// iPhone
+// iPad
+// Mac
+// Watch
+```
 
-let dictionary = [
+## Example: Dictionary
+
+```swift
+let categoryDictionary = [
     "1": "iPhone",
     "2": "iPad",
     "3": "Mac",
     "4": "Watch"
 ]
-let dictionaryCatalog = DictionaryCatalog(categories: dictionary)
-let nestedIterator = dictionaryCatalog.makeIterator()
+let dictionaryCatalog = DictionaryCatalog(categories: categoryDictionary)
+let dictionaryIterator = dictionaryCatalog.makeIterator()
 
-for category in dictionaryCatalog {
+while let category = dictionaryIterator.next() {
     print(category.name)
 }
-
-// Output: iPhone, iPad, Mac, Watch
+// Output:
+// iPhone
+// iPad
+// Mac
+// Watch
 ```
