@@ -16,19 +16,17 @@
 
 ## Problem statement
 
-- Each Apple Store product page contains reoccurring components, such as a bento box and carousel.
+For the Apple Store app, we encounter the need to create components that vary based on the device they are displayed on.
 
-- These components may be implemented with layout differences depending on the device the user is using.
+- Directly handling these variations can lead to complex and hard-to-maintain code containing conditional statements.
 
-- Our objective is to start with a simple system that can create each component for iPhone and iPad.
+- This poses a risk of introducing bugs if each variation is not handled separately.
 
-- When trying to use the same component class for the different devices, we may end up with complex conditional statements.
+- The Abstract Factory pattern can be used to create a system that can create specific components for specific devices.
 
-- To avoid this, the Abstract Factory pattern can be used to create a system that can create specific components for specific devices.
+- Usage of the code is encapsulated in a factory object, which can be easily replaced with another factory object to create components for a different device.
 
-- This is all done without the client knowing the specific classes of the components nor the device.
-
-- The concrete factory and products can be determined at runtime.
+- By determining the factory type at runtime, we can create components for different devices without changing the client code.
 
 ## Definitions
 
