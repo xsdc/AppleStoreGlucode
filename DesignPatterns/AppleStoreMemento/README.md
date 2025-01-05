@@ -10,48 +10,42 @@
 
 ## Pattern overview
 
-- The Memento pattern is used to capture an object's internal state and store it externally so that the object can be restored to this state later.
-- In many graphics editing applications, the user can undo and redo operations.
-- The Memento pattern can be used to store the state of the document before each operation and restore it when the user wants to undo the operation.
+- The Memento pattern is used to store the state of an object.
+
+- These can be stored in a stack, which allows for undo and redo operations.
+
+- The pattern focuses on encapsulation by ensuring that saved states are not able to be manipulated.
 
 ## Problem statement
 
-- We would like to store the state of the bag when products are added to it.
-- The Memento pattern can be used to store the state of the bag when products are added to it and restore the state when the user wants to undo the operation.
+- At the moment, the Apple Store allows users to remove products from their bag, then the option to undo the removal is provided.
 
-## Domain application
+- Only one undo operation is supported though.
 
-Memento:
+- We are tasked with implementing an undo system for multiple removed products.
 
-- Stores internal state of the Originator object.
-- The memento may store as much or as little of the originator's internal state as necessary at its originator's discretion.
-- Protects against access by objects other than the originator.
-- Mementos have effectively two interfaces.
-- Caretaker sees a narrow interface to the Memento — it can only pass the memento to other objects.
-- Originator, in contrast, sees a wide interface, one that lets it access all the data necessary to restore itself to its previous state.
-- Ideally, only the originator that produced the memento would be permitted to access the memento's internal state.
+- The problem may arise that the saved states could be manipulated if they are exposed.
 
-```swift
-struct BagState {
-    let products: [Product]
-}
-```
+- The Memento pattern allows us to manage the product removal stack without exposing the internal state of the bag.
 
-Originator:
+- This way, we can implement the undo system without violating encapsulation, and retain the integrity of the saved states.
+
+## Definitions
+
+#### Originator:
+
+- The object whose state needs to be saved.
 
 - Creates a memento containing a snapshot of its current internal state.
-- Uses the memento to restore its internal state.
+
+- Uses the memento to restore its internal state as needed.
 
 ```swift
 class Bag {
-    private var products: [Product] = []
+    private(set) var products: [Product]
 
-    func addProduct(_ product: Product) {
-        products.append(product)
-    }
-
-    func removeProduct(_ product: Product) {
-        products.removeAll { $0 == product }
+    init(products: [Product] = []) {
+        self.products = products
     }
 
     func save() -> BagState {
@@ -61,31 +55,97 @@ class Bag {
     func restore(from state: BagState) {
         products = state.products
     }
+
+    func removeProduct(withID id: String) {
+        products.removeAll { $0.id == id }
+    }
 }
 ```
 
-Caretaker:
+#### Memento:
 
-- Is responsible for the memento's safekeeping.
+- Provides the structure needed to store the state of the bag.
+
+- We only need to store the products in the bag, so other details are omitted.
+
+- Other properties can be added as needed, such as the bag's total price.
+
+```swift
+struct BagState {
+    let products: [Product]
+}
+```
+
+#### Caretaker:
+
+- Is responsible for the memento management.
+
 - Never operates on or examines the contents of a memento.
+
+- Redo and undo systems can be implemented in various ways.
+
+- Here we are only required to implement the undo system for a stack of removed products.
 
 ```swift
 class BagManager {
     private var bag: Bag
-    private var mementos: [BagState] = []
+    private var undoStates: [BagState] = []
 
-    init(bag: Bag) {
+    init(bag: Bag = Bag()) {
         self.bag = bag
     }
 
-    func addProduct(_ product: Product) {
-        bag.addProduct(product)
-        mementos.append(bag.save())
+    var isAbleToUndo: Bool {
+        !undoStates.isEmpty
     }
 
     func undo() {
-        guard let lastMemento = mementos.popLast() else { return }
-        bag.restore(from: lastMemento)
+        guard let lastUndoState = undoStates.popLast() else { return }
+        bag.restore(from: lastUndoState)
+    }
+
+    func removeProduct(withID id: String) {
+        undoStates.append(bag.save())
+        bag.removeProduct(withID: id)
     }
 }
+```
+
+## Example
+
+```swift
+struct Product: Equatable {
+    let id: String
+    let name: String
+}
+
+let bagProducts = [
+    Product(id: "A", name: "iPhone 16 Pro"),
+    Product(id: "B", name: "AirPods Pro")
+]
+let bag = Bag(products: bagProducts)
+let bagManager = BagManager(bag: bag)
+
+print(bag.products) // [Product(id: "A", name: "iPhone 16 Pro"), Product(id: "B", name: "AirPods Pro")]
+print(bagManager.isAbleToUndo) // false
+
+bagManager.removeProduct(withID: "A")
+
+print(bag.products) // [Product(id: "B", name: "AirPods Pro")]
+print(bagManager.isAbleToUndo) // true
+
+bagManager.removeProduct(withID: "B")
+
+print(bag.products) // []
+print(bagManager.isAbleToUndo) // true
+
+bagManager.undo()
+
+print(bag.products) // [Product(id: "B", name: "AirPods Pro")]
+print(bagManager.isAbleToUndo) // true
+
+bagManager.undo()
+
+print(bag.products) // [Product(id: "A", name: "iPhone 16 Pro"), Product(id: "B", name: "AirPods Pro")]
+print(bagManager.isAbleToUndo) // false
 ```
