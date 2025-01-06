@@ -37,8 +37,8 @@
 - Defines the protocol we'll use to communicate price updates between the product configuration and the product summary.
 
 ```swift
-protocol PriceUpdating {
-    func totalChanged(toPrice total: Double)
+protocol TotalUpdateHandler {
+    func totalUpdated(to total: Double)
 }
 ```
 
@@ -46,21 +46,21 @@ protocol PriceUpdating {
 
 - Knows and maintains its colleagues.
 
-- Facilitates communication between them by implementing the `PriceUpdating` protocol.
+- Facilitates communication between them by implementing the `TotalUpdateHandler` protocol.
 
 ```swift
-class ProductView: PriceUpdating {
-    private let configurationView: ProductConfigurationView
-    private let summaryView: ProductSummaryView
+class ProductView: TotalUpdateHandler {
+    private let configurationViewModel: ProductConfigurationViewModel
+    private let summaryViewModel: ProductSummaryViewModel
 
-    init(configurationView: ProductConfigurationView, summaryView: ProductSummaryView) {
-        self.configurationView = configurationView
-        self.summaryView = summaryView
-        self.configurationView.assignPriceUpdater(self)
+    init(configurationViewModel: ProductConfigurationViewModel, summaryViewModel: ProductSummaryViewModel) {
+        self.configurationViewModel = configurationViewModel
+        self.summaryViewModel = summaryViewModel
+        self.configurationViewModel.delegate = self
     }
 
-    func totalChanged(toPrice total: Double) {
-        summaryView.updateTotal(toPrice: total)
+    func totalUpdated(to total: Double) {
+        summaryViewModel.updateTotal(to: total)
     }
 }
 ```
@@ -69,36 +69,32 @@ class ProductView: PriceUpdating {
 
 - They maintain a reference to their Mediator object if they need to communicate with other Colleague objects.
 
-- In our case, we have one way communication from the `ProductConfigurationView` to the `ProductSummaryView`.
+- In our case, we have one way communication from the `ProductConfigurationViewModel` to the `ProductSummaryViewModel`.
 
-- The `ProductConfigurationView` calls the `totalChanged(toPrice:)` method on the `PriceUpdating` protocol.
+- The `ProductConfigurationViewModel` calls the `totalUpdated(to:)` method on the `TotalUpdateHandler` protocol.
 
 - In our case, that is implemented by the `ProductView` class.
 
-- The `ProductView` then calls the `updateTotal(toPrice:)` method on the `ProductSummaryView`.
+- The `ProductView` then calls the `updateTotal(to:)` method on the `ProductSummaryViewModel`.
 
 ```swift
-class ProductSummaryView {
-    private(set) var price: Double
+class ProductSummaryViewModel {
+    private(set) var total: Double
 
-    init(price: Double, deliveryEstimate: String) {
-        self.price = price
+    init(total: Double, deliveryEstimate: String) {
+        self.total = total
     }
 
-    func updateTotal(toPrice price: Double) {
-        self.price = price
+    func updateTotal(to total: Double) {
+        self.total = total
     }
 }
 
-class ProductConfigurationView {
-    private var priceUpdater: PriceUpdating?
+class ProductConfigurationViewModel {
+    var delegate: TotalUpdateHandler?
 
-    func assignPriceUpdater(_ priceUpdater: PriceUpdating) {
-        self.priceUpdater = priceUpdater
-    }
-
-    func configurationChanged(withPrice price: Double) {
-        priceUpdater?.totalChanged(toPrice: price)
+    func configurationDidChange(withTotal total: Double) {
+        delegate?.totalUpdated(to: total)
     }
 }
 ```
@@ -106,16 +102,16 @@ class ProductConfigurationView {
 ## Example
 
 ```swift
-let configurationView = ProductConfigurationView()
-let summaryView = ProductSummaryView(price: 999.99, deliveryEstimate: "1-2 days")
-let productView = ProductView(configurationView: configurationView, summaryView: summaryView)
+let configurationViewModel = ProductConfigurationViewModel()
+let summaryViewModel = ProductSummaryViewModel(total: 999.99, deliveryEstimate: "1-2 days")
+let productView = ProductView(configurationViewModel: configurationViewModel, summaryViewModel: summaryViewModel)
 
 // Initial price
-print(summaryView.price) // 999.99
+print(summaryViewModel.total) // 999.99
 
 // Update price via the configuration view
-configurationView.configurationChanged(withPrice: 1099.99)
+configurationViewModel.configurationDidChange(withTotal: 1099.99)
 
 // New price should be reflected in the summary view
-print(summaryView.price) // 1099.99
+print(summaryViewModel.total) // 1099.99
 ```
