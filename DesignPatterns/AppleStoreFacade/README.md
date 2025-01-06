@@ -22,7 +22,7 @@
 
 - Once an order is processed, we need to send a notification to the customer.
 
-- We have two notfication APIs that we have implemented: `MailNotificationAPI` and `MessageNotificationAPI`.
+- We have two notification APIs that we have implemented: `MailNotificationAPI` and `MessageNotificationAPI`.
 
 - We also have a `Settings` class that handles all the settings for the app, including the notification type selected by the user.
 
@@ -51,13 +51,13 @@ struct Settings {
 }
 
 struct MailNotificationAPI {
-    func send(text: String) {
+    func sendMail(withText: String) {
         print("Mail sent with text: \(text)")
     }
 }
 
 struct MessageNotificationAPI {
-    func send(text: String) {
+    func sendMessage(withText: String) {
         print("Message sent with text: \(text)")
     }
 }
@@ -78,9 +78,9 @@ struct NotificationFacade {
     func send(text: String) {
         switch settings.notificationType {
         case .mail:
-            mailNotificationAPI.sendMailWithText(text)
+            mailNotificationAPI.sendMail(withText: text)
         case .message:
-            messageNotificationAPI.sendMessageWithText(text)
+            messageNotificationAPI.sendMessage(withText: text)
         }
     }
 }
