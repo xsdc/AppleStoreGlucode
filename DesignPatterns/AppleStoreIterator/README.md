@@ -16,7 +16,7 @@
 
 - These include sets, arrays, dictionaries, linked lists, etc.
 
--  The traversel of the collection is encapsulated, and a uniform interface is provided to access the elements.
+- The traversal of the collection is encapsulated, and a uniform interface is provided to access the elements.
 
 ## Problem statement
 
@@ -28,13 +28,13 @@
 
 - The app is still under development, and at this point the underlying data structure for the catalog is a dictionary.
 
-- We want to avoid problem of coupling our code to the dictionary when traversing the categories and products.
+- We want to avoid the problem of coupling our code to the dictionary when traversing the categories and products.
 
 - The Iterator pattern enables traversing the dictionary without exposing the underlying representation.
 
 - By providing a uniform interface to access the elements, we can easily switch the underlying data structure in the future.
 
-- In the example below, we will implement the Iterator pattern to traverse the categories in the Apple Store catalog. We'll omii the product details for simplicity.
+- In the example below, we will implement the Iterator pattern to traverse the categories in the Apple Store catalog. We'll omit the product details for simplicity.
 
 ## Definitions
 
@@ -56,7 +56,7 @@ protocol CatalogIterator {
 - The implementation is specific to the underlying data structure.
 
 ```swift
-class ArrayCatalogIterator: CatalogIterator {
+struct ArrayCatalogIterator: CatalogIterator {
     private let categories: [String]
     private var index = 0
 
@@ -64,7 +64,7 @@ class ArrayCatalogIterator: CatalogIterator {
         self.categories = categories
     }
 
-    func next() -> Category? {
+    mutating func next() -> Category? {
         guard index < categories.count else { return nil }
         let category = Category(name: categories[index])
         index += 1
@@ -72,7 +72,7 @@ class ArrayCatalogIterator: CatalogIterator {
     }
 }
 
-class DictionaryCatalogIterator: CatalogIterator {
+struct DictionaryCatalogIterator: CatalogIterator {
     private let categories: [String]
     private var index = 0
 
@@ -82,7 +82,7 @@ class DictionaryCatalogIterator: CatalogIterator {
             .map { $0.value }
     }
 
-    func next() -> Category? {
+    mutating func next() -> Category? {
         guard index < categories.count else { return nil }
         let category = Category(name: categories[index])
         index += 1
@@ -120,7 +120,7 @@ struct ArrayCatalog: CatalogCollection {
     }
 }
 
-class DictionaryCatalog: CatalogCollection {
+struct DictionaryCatalog: CatalogCollection {
     private let categories: [String: String]
 
     init(categories: [String: String]) {
@@ -142,7 +142,7 @@ struct Category {
 
 let categories = ["iPhone", "iPad", "Mac", "Watch"]
 let arrayCatalog = ArrayCatalog(categories: categories)
-let arrayIterator = arrayCatalog.makeIterator()
+var arrayIterator = arrayCatalog.makeIterator()
 
 while let category = arrayIterator.next() {
     print(category.name)
@@ -164,7 +164,7 @@ let categoryDictionary = [
     "4": "Watch"
 ]
 let dictionaryCatalog = DictionaryCatalog(categories: categoryDictionary)
-let dictionaryIterator = dictionaryCatalog.makeIterator()
+var dictionaryIterator = dictionaryCatalog.makeIterator()
 
 while let category = dictionaryIterator.next() {
     print(category.name)
