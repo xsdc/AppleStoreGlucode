@@ -47,8 +47,12 @@
 ```swift
 class ProductViewModel {
     var showNoInternetConnectionAlert = false
-    var requests: [Request] = []
-    private var state: State = InitialState()
+    var requests: [ServiceRequest] = []
+    private var state: State
+
+    init(state: State = InitialState()) {
+        self.state = state
+    }
 
     func updateConnection(toReachable isReachable: Bool) {
         if isReachable {
@@ -83,15 +87,12 @@ protocol State {
 ```swift
 class InitialState: State {
     func connectionDidBecomeReachable(for viewModel: ProductViewModel) {
-        // Update view model
         viewModel.showNoInternetConnectionAlert = false
     }
 
     func connectionDidBecomeUnreachable(for viewModel: ProductViewModel) {
-        // Update view model
         viewModel.showNoInternetConnectionAlert = true
 
-        // Resume all requests
         for index in viewModel.requests.indices {
             viewModel.requests[index].isSuspended = true
         }
@@ -100,30 +101,26 @@ class InitialState: State {
 
 class ConnectionUnreachableState: State {
     func connectionDidBecomeReachable(for viewModel: ProductViewModel) {
-        // Update view model
         viewModel.showNoInternetConnectionAlert = false
 
-        // Resume all requests
         for index in viewModel.requests.indices {
             viewModel.requests[index].isSuspended = false
         }
     }
 
     func connectionDidBecomeUnreachable(for viewModel: ProductViewModel) {
-        // No action needed
+        viewModel.showNoInternetConnectionAlert = true
     }
 }
 
 class ConnectionReachableState: State {
     func connectionDidBecomeReachable(for viewModel: ProductViewModel) {
-        // No action needed
+        viewModel.showNoInternetConnectionAlert = false
     }
 
     func connectionDidBecomeUnreachable(for viewModel: ProductViewModel) {
-        // Update view model
         viewModel.showNoInternetConnectionAlert = true
 
-        // Suspend all requests
         for index in viewModel.requests.indices {
             viewModel.requests[index].isSuspended = true
         }
@@ -134,35 +131,35 @@ class ConnectionReachableState: State {
 ## Example
 
 ```swift
-struct Request {
+struct ServiceRequest {
     let id: Int
     var isSuspended: Bool
 }
 
 let viewModel = ProductViewModel() // InitialState assigned
 viewModel.requests = [
-    Request(id: 1, isSuspended: false),
-    Request(id: 2, isSuspended: false)
+    ServiceRequest(id: 1, isSuspended: false),
+    ServiceRequest(id: 2, isSuspended: false)
 ]
 
 print(viewModel.showNoInternetConnectionAlert) // false
-print(viewModel.requests) // [Request(id: 1, isSuspended: false), Request(id: 2, isSuspended: false)]
+print(viewModel.requests) // [ServiceRequest(id: 1, isSuspended: false), ServiceRequest(id: 2, isSuspended: false)]
 
 // InitialState.connectionDidBecomeUnreachable called, ConnectionUnreachableState assigned
 viewModel.updateConnection(toReachable: false)
 
 print(viewModel.showNoInternetConnectionAlert) // true
-print(viewModel.requests) // [Request(id: 1, isSuspended: true), Request(id: 2, isSuspended: true)]
+print(viewModel.requests) // [ServiceRequest(id: 1, isSuspended: true), ServiceRequest(id: 2, isSuspended: true)]
 
 // ConnectionUnreachableState.connectionDidBecomeReachable called, ConnectionReachableState assigned
 viewModel.updateConnection(toReachable: true)
 
 print(viewModel.showNoInternetConnectionAlert) // false
-print(viewModel.requests) // [Request(id: 1, isSuspended: false), Request(id: 2, isSuspended: false)]
+print(viewModel.requests) // [ServiceRequest(id: 1, isSuspended: false), ServiceRequest(id: 2, isSuspended: false)]
 
 // ConnectionReachableState.connectionDidBecomeUnreachable called, ConnectionUnreachableState assigned
 viewModel.updateConnection(toReachable: false)
 
 print(viewModel.showNoInternetConnectionAlert) // true
-print(viewModel.requests) // [Request(id: 1, isSuspended: true), Request(id: 2, isSuspended: true)]
+print(viewModel.requests) // [ServiceRequest(id: 1, isSuspended: true), ServiceRequest(id: 2, isSuspended: true)]
 ```
