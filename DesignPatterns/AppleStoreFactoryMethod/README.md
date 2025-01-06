@@ -101,52 +101,29 @@ struct InternationalShippingMethod: ShippingMethod {
 }
 ```
 
-#### Creator:
+#### Creator
 
-- The protocol that is to be used to create shipping methods and return them as `ShippingMethod` objects.
+- Declares the factory method, which returns an object of type `ShippingMethod`.
 
-- This abstraction enables creating objects without specifying the exact class of the object that will be created.
-
-```swift
-protocol ShippingMethodFactory {
-    func makeShippingMethod() -> ShippingMethod
-}
-```
-
-#### Concrete creators:
-
-- Implementations of the `ShippingMethodCreating` protocol that create specific shipping methods.
-
-- The base shipping cost and weight are used to calculate the shipping cost.
-
-- This illustrates how the Factory Method pattern can be used to create different representations of an object based on the context.
+- Creators can also be defined as protocols for more complex scenarios where multiple creator classes are needed.
 
 ```swift
-struct InStorePickupShippingMethodFactory: ShippingMethodFactory {
-    func makeShippingMethod() -> ShippingMethod {
-        return InStorePickupMethod()
+class ShippingMethodFactory {
+    enum ShippingMethodType {
+        case express, international, standard, inStorePickup
     }
-}
 
-struct StandardShippingMethodFactory: ShippingMethodFactory {
-    func makeShippingMethod() -> ShippingMethod {
-        return StandardShippingMethod()
-    }
-}
-
-struct ExpressShippingMethodFactory: ShippingMethodFactory {
-    let baseShippingCost: Double
-
-    func makeShippingMethod() -> ShippingMethod {
-        return ExpressShippingMethod(baseShippingCost: baseShippingCost)
-    }
-}
-
-struct InternationalShippingMethodFactory: ShippingMethodFactory {
-    let baseShippingCost: Double
-
-    func makeShippingMethod() -> ShippingMethod {
-        return InternationalShippingMethod(baseShippingCost: baseShippingCost)
+    static func makeShippingMethod(_ method: ShippingMethodType) -> ShippingMethod {
+        switch method {
+        case .standard:
+            return StandardShippingMethod()
+        case .inStorePickup:
+            return InStorePickupMethod()
+        case .express:
+            return ExpressShippingMethod(baseShippingCost: 5)
+        case .international:
+            return InternationalShippingMethod(baseShippingCost: 5)
+        }
     }
 }
 ```
@@ -154,27 +131,23 @@ struct InternationalShippingMethodFactory: ShippingMethodFactory {
 ## Example
 
 ```swift
-let inStorePickupShippingFactory = InStorePickupShippingMethodFactory()
-let inStorePickupShippingMethod = inStorePickupShippingFactory.makeShippingMethod()
+let inStorePickupShippingMethod = ShippingMethodFactory.makeShippingMethod(.inStorePickup)
 print(inStorePickupShippingMethod.title) // In-Store Pickup
 print(inStorePickupShippingMethod.deliveryDateEstimation) // Same day
 print(inStorePickupShippingMethod.shippingCost(forWeight: 5)) // 0.0
 
-let standardShippingMethodFactory = StandardShippingMethodFactory()
-let standardShippingMethod = standardShippingMethodFactory.makeShippingMethod()
+let standardShippingMethod = ShippingMethodFactory.makeShippingMethod(.standard)
 print(standardShippingMethod.title) // Standard Shipping
 print(standardShippingMethod.deliveryDateEstimation) // 3-5 business days
 print(standardShippingMethod.shippingCost(forWeight: 5)) // 0.0
 
-let expressShippingMethodFactory = ExpressShippingMethodFactory(baseShippingCost: 5)
-let expressShippingMethod = expressShippingMethodFactory.makeShippingMethod()
+let expressShippingMethod = ShippingMethodFactory.makeShippingMethod(.express)
 print(expressShippingMethod.title) // Express Shipping
 print(expressShippingMethod.deliveryDateEstimation) // 1-2 business days
 print(expressShippingMethod.shippingCost(forWeight: 5)) // 25.0
 
-let internationalShippingMethodFactory = InternationalShippingMethodFactory(baseShippingCost: 10)
-let internationalShippingMethod = internationalShippingMethodFactory.makeShippingMethod()
+let internationalShippingMethod = ShippingMethodFactory.makeShippingMethod(.international)
 print(internationalShippingMethod.title) // International Shipping
 print(internationalShippingMethod.deliveryDateEstimation) // 7-14 business days
-print(internationalShippingMethod.shippingCost(forWeight: 5)) // 50.0
+print(internationalShippingMethod.shippingCost(forWeight: 10)) // 50.0
 ```
