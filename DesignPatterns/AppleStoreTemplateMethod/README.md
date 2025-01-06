@@ -40,12 +40,11 @@
 
 - Defines the default implementation of `process`, which orchestrates the sequence.
 
-- We implement the equivalent of abstract classes in Swift by defining a protocol, then providing default implementations for the methods in an extension.
+- We provide a default implementation of the `AppleWatchConfiguration` called `DefaultAppleWatchConfiguration`, which marks the `process()` method as `final` to protect the process defined.
 
 ```swift
-protocol AppleWatchConfigurationTemplate {
+protocol AppleWatchConfiguration {
     func process()
-
     func mapDataForWatchCaseSize()
     func mapDataForWatchCaseMaterial()
     func mapDataForWatchBand()
@@ -53,8 +52,8 @@ protocol AppleWatchConfigurationTemplate {
     func mapDataForWatchEngraving()
 }
 
-extension AppleWatchConfigurationTemplate {
-    func process() {
+class DefaultAppleWatchConfiguration: AppleWatchConfiguration {
+    final func process() {
         mapDataForWatchCaseSize()
         mapDataForWatchCaseMaterial()
         mapDataForWatchBand()
@@ -63,23 +62,23 @@ extension AppleWatchConfigurationTemplate {
     }
 
     func mapDataForWatchCaseSize() {
-        print("Implementation for converting the front data structure for the Apple Watch Series 10 case size.")
+        print("Default implementation for case size.")
     }
-
+    
     func mapDataForWatchCaseMaterial() {
-        print("Implementation for converting the front data structure for the Apple Watch Series 10 case material.")
+        print("Default implementation for case material.")
     }
-
+    
     func mapDataForWatchBand() {
-        print("Implementation for converting the front data structure for the Apple Watch Series 10 band.")
+        print("Default implementation for watch band.")
     }
-
+    
     func mapDataForWatchBandSize() {
-        print("Implementation for converting the front data structure for the Apple Watch Series 10 band size.")
+        print("Default implementation for band size.")
     }
-
+    
     func mapDataForWatchEngraving() {
-        print("Implementation for converting the front data structure for the Apple Watch Series 10 engraving.")
+        print("Default implementation for engraving.")
     }
 }
 ```
@@ -97,42 +96,47 @@ extension AppleWatchConfigurationTemplate {
 - For simplicity, the data mapping implementations are omitted.
 
 ```swift
-class Series10AppleWatchConfiguration: AppleWatchConfigurationTemplate {
-    func process() {
-        mapDataForWatchCaseSize()
-        mapDataForWatchCaseMaterial()
-        mapDataForWatchBand()
-        mapDataForWatchBandSize()
-        mapDataForWatchEngraving()
+class Series10AppleWatchConfiguration: DefaultAppleWatchConfiguration {
+    override func mapDataForWatchCaseSize() {
+        print("Implementation for converting the data structure for the Apple Watch Series 10 case size.")
+    }
+
+    override func mapDataForWatchCaseMaterial() {
+        print("Implementation for converting the data structure for the Apple Watch Series 10 case material.")
+    }
+
+    override func mapDataForWatchBand() {
+        print("Implementation for converting the data structure for the Apple Watch Series 10 band.")
+    }
+
+    override func mapDataForWatchBandSize() {
+        print("Implementation for converting the data structure for the Apple Watch Series 10 band size.")
+    }
+
+    override func mapDataForWatchEngraving() {
+        print("Implementation for converting the data structure for the Apple Watch Series 10 engraving.")
     }
 }
 
-class HermèsSeries10AppleWatchConfiguration: AppleWatchConfigurationTemplate {
-    func process() {
-        mapDataForWatchCaseSize()
-        mapDataForWatchCaseMaterial()
-        mapDataForWatchBand()
-        mapDataForWatchBandSize()
+class HermèsSeries10AppleWatchConfiguration: DefaultAppleWatchConfiguration {
+    override func mapDataForWatchCaseSize() {
+        print("Implementation for converting the data structure for the Apple Watch Hermès Series case size.")
     }
 
-    func mapDataForWatchCaseSize() {
-        print("Implementation for converting the front data structure for the Apple Watch Hermès Series case size.")
+    override func mapDataForWatchCaseMaterial() {
+        print("Implementation for converting the data structure for the Apple Watch Hermès Series case material.")
     }
 
-    func mapDataForWatchCaseMaterial() {
-        print("Directly set Hermès Series 10 case material to titanium.")
+    override func mapDataForWatchBand() {
+        print("Implementation for converting the data structure for the Apple Watch Hermès Series band.")
     }
 
-    func mapDataForWatchBand() {
-        print("Implementation for converting the front data structure for the Apple Watch Hermès Series band.")
+    override func mapDataForWatchBandSize() {
+        print("Implementation for converting the data structure for the Apple Watch Hermès Series band size.")
     }
 
-    func mapDataForWatchBandSize() {
-        print("Implementation for converting the front data structure for the Apple Watch Hermès Series band size.")
-    }
-
-    func mapDataForWatchEngraving() {
-        print("Implementation for converting the front data structure for the Apple Watch Hermès Series 10 engraving.")
+    override func mapDataForWatchEngraving() {
+        print("Implementation for converting the data structure for the Apple Watch Hermès Series 10 engraving.")
     }
 }
 ```
@@ -154,8 +158,9 @@ let hermèsSeries10AppleWatchConfiguration = HermèsSeries10AppleWatchConfigurat
 hermèsSeries10AppleWatchConfiguration.process()
 
 // Output:
-// Implementation for converting the front data structure for the Apple Watch Hermès Series case size.
-// Directly set Hermès Series 10 case material to titanium.
-// Implementation for converting the front data structure for the Apple Watch Hermès Series band.
-// Implementation for converting the front data structure for the Apple Watch Hermès Series band size.
+// Implementation for converting the data structure for the Apple Watch Hermès Series case size.
+// Implementation for converting the data structure for the Apple Watch Hermès Series case material.
+// Implementation for converting the data structure for the Apple Watch Hermès Series band.
+// Implementation for converting the data structure for the Apple Watch Hermès Series band size.
+// Implementation for converting the data structure for the Apple Watch Hermès Series 10 engraving.
 ```
