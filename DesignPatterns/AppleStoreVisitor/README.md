@@ -32,11 +32,18 @@
 
 #### Element:
 
-Defines the protocol that accepts different types of discount visitors.
+- Defines the protocol that accepts different types of discount visitors.
+
+- Products are will be accepting visitors, so we define each roles involved in the Element.
 
 ```swift
-protocol DiscountVisitorAccepting {
-    func acceptVisitor(_ visitor: DiscountVisitor)
+public protocol Product {
+    var id: String { get }
+    var price: Double { get }
+}
+
+public protocol VisitorAccepting {
+    func accept<V: Visitor>(_ visitor: V) -> V.VisitorResult
 }
 ```
 
@@ -45,70 +52,68 @@ protocol DiscountVisitorAccepting {
 Concrete product types that accept a visitor according to the protocol defined above.
 
 ```swift
-struct MacBookProProduct: DiscountVisitorAccepting {
+struct MacBookProProduct: Product, VisitorAccepting {
     let id: String
     let price: Double
 
-    func acceptVisitor(_ visitor: DiscountVisitor) {
-        visitor.visitMacBookPro(self)
+    func accept<V: Visitor>(_ visitor: V) -> V.VisitorResult {
+        visitor.visit(self)
     }
 }
 
-struct VisionProProduct: DiscountVisitorAccepting {
+struct VisionProProduct: Product, VisitorAccepting {
     let id: String
     let price: Double
 
-    func acceptVisitor(_ visitor: DiscountVisitor) {
-        visitor.visitVisionPro(self)
+    func accept<V: Visitor>(_ visitor: V) -> V.VisitorResult {
+        visitor.visit(self)
     }
 }
 ```
 
 #### Visitor:
 
-Defines the discount calculation methods for each product type.
+- Defines the visitor protocol that will be implemented by concrete visitors.
+
+- We are able to define the return type via the use of an associated type.
 
 ```swift
-protocol DiscountVisitor {
-    func visitMacBookPro(_ macBookPro: MacBookProProduct)
-    func visitVisionPro(_ visionPro: VisionProProduct)
+protocol Visitor {
+    associatedtype VisitorResult
+    func visit(_ product: Product) -> VisitorResult
 }
 ```
 
 #### Concrete visitors:
 
-- Implements the discount calculations for each product type.
+- Concrete visitors that implement the visitor protocol.
 
-- Education discount is 25%.
-
-- Employee discount is 50%.
+- We have three discount types: education and employee discounts, and a description visitor.
 
 ```swift
-class EducationDiscountVisitor: DiscountVisitor {
+class EducationDiscountVisitor: Visitor {
+    typealias VisitorResult = Double
     private let discountPercentage = 0.25
-    private(set) var macBookProDiscount = 0.0
-    private(set) var visionProDiscount = 0.0
 
-    func visitMacBookPro(_ macBookPro: MacBookProProduct) {
-        macBookProDiscount = macBookPro.price * discountPercentage
-    }
-
-    func visitVisionPro(_ visionPro: VisionProProduct) {
-        visionProDiscount = visionPro.price * discountPercentage
+    func visit(_ product: Product) -> Double {
+        product.price * discountPercentage
     }
 }
 
-class EmployeeDiscountVisitor: DiscountVisitor {
+class EmployeeDiscountVisitor: Visitor {
+    typealias VistorResult = Double
     private let discountPercentage = 0.5
-    private(set) var macBookProDiscount = 0.0
-    private(set) var visionProDiscount = 0.0
 
-    func visitMacBookPro(_ macBookPro: MacBookProProduct) {
-        macBookProDiscount = macBookPro.price * discountPercentage
+    func visit(_ product: Product) -> Double {
+        product.price * discountPercentage
     }
+}
 
-    func visitVisionPro(_ visionPro: VisionProProduct) {
-        visionProDiscount = visionPro.price * discountPercentage
+class DescriptionVisitor: Visitor {
+    typealias VisitorResult = String
+
+    func visit(_ product: Product) -> String {
+        "Product with ID \(product.id) costs $\(product.price)"
     }
 }
 ```
@@ -117,20 +122,19 @@ class EmployeeDiscountVisitor: DiscountVisitor {
 
 ```swift
 // Education discount for MacBook Pro
-
 let educationDiscountVisitor = EducationDiscountVisitor()
-
 let macBookProProduct = MacBookProProduct(id: "1", price: 1000.00)
-macBookProProduct.acceptVisitor(educationDiscountVisitor)
-
-print(educationDiscountVisitor.macBookProDiscount) // 250.00
+let macBookProEducationDiscount = macBookProProduct.accept(educationDiscountVisitor)
+print(macBookProEducationDiscount) // 250.00
 
 // Employee discount for Vision Pro
-
 let employeeDiscountVisitor = EmployeeDiscountVisitor()
+let visionProProduct = VisionProProduct(id: "2", price: 10000.00)
+let visionProEmployeeDiscount = visionProProduct.accept(employeeDiscountVisitor)
+print(visionProEmployeeDiscount) // 5000.00
 
-let visionProProduct = VisionProProduct(id: "1", price: 10000.00)
-visionProProduct.acceptVisitor(employeeDiscountVisitor)
-
-print(employeeDiscountVisitor.visionProDiscount) // 5000.00
+// Description for MacBook Pro
+let descriptionVisitor = DescriptionVisitor()
+let macBookProDescription = macBookProProduct.accept(descriptionVisitor)
+print(macBookProDescription) // Product with ID 1 costs $1000.0
 ```
