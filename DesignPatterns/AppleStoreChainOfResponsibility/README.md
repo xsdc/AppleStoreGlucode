@@ -18,7 +18,7 @@
 
 ## Problem statement
 
-- When users add a product to their bag, a series actions need to be performed.
+- When users add a product to their bag, a series of actions need to be performed.
 
 - For example, checking if the product is in stock, attempting to add it to the bag, and logging an analytics event.
 
@@ -28,7 +28,7 @@
 
 - Each handler performs its specific action and then passes the request to the next handler in the chain.
 
-- This enabled a clear separation of concerns and allows for flexibility to add, remove, or reorder the handlers in the chain.
+- This enables a clear separation of concerns and allows for flexibility to add, remove, or reorder the handlers in the chain.
 
 ## Definitions
 
@@ -39,6 +39,8 @@
 - We're using a closure to communicate the result of the request.
 
 - The `Request` object can be used at any point in the chain.
+
+- The `next` property is used to maintain a reference to the next handler in the chain.
 
 ```swift
 protocol Handler {
@@ -114,7 +116,6 @@ class LoggingHandler: Handler {
 
     func handle(request: Request, completion: @escaping (String) -> Void) {
         completion("Analytics event logged for product \(request.productId)")
-        completion("Request completed")
     }
 }
 ```
@@ -130,4 +131,9 @@ let request = Request(productId: "1234")
 stockCheckHandler.handle(request: request) { result in
     print(result)
 }
+
+// Output:
+// Product 1234 is in stock
+// Product 1234 added to bag
+// Analytics event logged for product 1234
 ```
