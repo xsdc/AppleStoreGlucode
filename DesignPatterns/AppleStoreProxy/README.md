@@ -10,11 +10,11 @@
 
 ## Pattern overview
 
-- The Proxy pattern provides a layer that may be used to add behavior to a class.
+- The Proxy pattern provides a layer that may be used to add behaviour to a class.
 
 - Common uses include controlling access to a class, adding logging, or to add caching.
 
-- It is used in situations where you want to add behavior to a class without changing the class itself.
+- It is used in situations where you want to add behaviour to a class without changing the class itself.
 
 ## Problem statement
 
@@ -32,9 +32,9 @@
 
 #### Real subject:
 
-- The object that we want to add behavior to.
+- The object to which we want to add behavior.
 
-- In our scenario, this is an existing `Bag` class that we would like add analytics to.
+- In our scenario, this is an existing `Bag` struct to which we would like to add analytics.
 
 ```swift
 struct Bag: ProductManaging {
@@ -58,7 +58,7 @@ struct Bag: ProductManaging {
 
 - By defining a common protocol, we can use the proxy in place of the real subject.
 
-- The proxy will be used to add the additional analytics behavior to the real subject `Bag`, without changing it.
+- The proxy will be used to add the additional analytics behaviour to the real subject `Bag`, without changing it.
 
 ```swift
 protocol ProductManaging {
@@ -74,7 +74,7 @@ protocol ProductManaging {
 
 - Share a protocol with the real subject so that the proxy can be used anywhere the real subject is expected.
 
-- We can now add the analytics behavior to the proxy without changing the real subject, while still making use of its functionality.
+- We can now add the analytics behaviour to the proxy without changing the real subject, while still making use of its functionality.
 
 ```swift
 struct BagWithAnalyticsProxy: ProductManaging {
