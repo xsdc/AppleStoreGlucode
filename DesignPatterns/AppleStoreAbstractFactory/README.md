@@ -10,94 +10,173 @@
 
 ## Pattern overview
 
-- The Abstract Factory pattern provides an interface for creating families of related or dependent objects without specifying their concrete classes.
-- A common example of the Abstract Factory pattern is a user interface toolkit, where the factory can create different types of buttons, menus, and windows.
-- The Abstract Factory pattern is similar to the Factory Method pattern, but it creates an entire family of products instead of a single product.
+- The Abstract Factory pattern enables the creation of families of related objects.
+
+- It can be seen as an extension of the Factory Method pattern.
 
 ## Problem statement
 
-- For the Apple Store, consider categories of products such as iPhones, iPads, and MacBooks.
-- Each category has different models. For iPad: iPad mini, iPad Air, iPad Pro, and iPad.
-- Each model has different configurations.
-- We can use the abstract factory pattern to create a factory for each category of products.
+For the Apple Store app, we encounter the need to create components that vary based on the device they are displayed on.
 
-## Domain application
+- Directly handling these variations can lead to complex and hard-to-maintain code containing conditional statements.
 
-Abstract Factory:
+- This poses a risk of introducing bugs if each variation is not handled separately.
 
-Declares an interface for operations that create abstract product objects.
+- The Abstract Factory pattern can be used to create a system that can create specific components for specific devices.
+
+- Usage of the code is encapsulated in a factory object, which can be easily replaced with another factory object to create components for a different device.
+
+- By determining the factory type at runtime, we can create components for different devices without changing the client code.
+
+## Definitions
+
+#### Abstract products:
+
+- Declare protocols for components we want to create.
+
+- Collectively, these protocols define a group of products that make up a product family.
+
+- We've kept it simple by only including two components: a carousel and a bento box.
 
 ```swift
-protocol SeriesFactory {
-    func createProductA() -> AbstractProductA
-    func createProductB() -> AbstractProductB
+protocol CarouselViewable {
+    func stopCarousel()
+    func startCarousel()
+}
+
+protocol BentoBoxViewable {
+    enum BentoBoxType {
+        case small
+        case medium
+        case large
+    }
+
+    var type: BentoBoxType { get }
 }
 ```
 
-Concrete Factory:
+#### Concrete products:
 
-Implements the operations to create concrete product objects.
+- Concrete implementations of the abstract products.
+
+- Each product must implement the interface of its family.
+
+- For simplicity, we have two families of products: iPhone and iPad.
 
 ```swift
-class AppleFactory: MacFactory, WatchFactory {
-    func createMacBookPro() -> Mac {
-        return MacBookPro()
+class iPhoneCarouselView: CarouselViewable {
+    func stopCarousel() {
+        print("iPhone carousel stopped")
     }
 
-    func createMacBookAir() -> Mac {
-        return MacBookAir()
+    func startCarousel() {
+        print("iPhone carousel started")
+    }
+}
+
+class iPadCarouselView: CarouselViewable {
+    func stopCarousel() {
+        print("iPad carousel stopped")
     }
 
-    func createAppleWatchSeries() -> AppleWatch {
-        return AppleWatchSeries()
+    func startCarousel() {
+        print("iPad carousel started")
     }
+}
 
-    func createAppleWatchUltra() -> AppleWatch {
-        return AppleWatchUltra()
+class iPhoneBentoBoxView: BentoBoxViewable {
+    let type: BentoBoxType
+
+    init(type: BentoBoxType) {
+        self.type = type
+    }
+}
+
+class iPadBentoBoxView: BentoBoxViewable {
+    let type: BentoBoxType
+
+    init(type: BentoBoxType) {
+        self.type = type
     }
 }
 ```
 
-AbstractProduct:
+#### Abstract factory:
 
-Declares an interface for a type of product object.
+- Declares a protocol for each product family.
+
+- Each protocol declares a set of methods for creating each product.
 
 ```swift
-protocol AbstractProductA {
-    func usefulFunctionA() -> String
+protocol AbstractComponentFactory {
+    func makeCarouselView() -> CarouselViewable
+    func makeBentoBoxView(type: BentoBoxViewable.BentoBoxType) -> BentoBoxViewable
 }
 ```
 
-ConcreteProduct:
+#### Concrete factory:
 
-- Defines a product object to be created by the corresponding concrete factory.
-- Implements the AbstractProduct interface.
+Implements the protocol declared by the abstract factory.
 
 ```swift
-class ConcreteProductA1: AbstractProductA {
-    func usefulFunctionA() -> String {
-        return "The result of the product A1."
+class iPhoneComponentFactory: AbstractComponentFactory {
+    func makeCarouselView() -> CarouselViewable {
+        return iPhoneCarouselView()
+    }
+
+    func makeBentoBoxView(type: BentoBoxViewable.BentoBoxType) -> BentoBoxViewable {
+        return iPhoneBentoBoxView(type: type)
+    }
+}
+
+class iPadComponentFactory: AbstractComponentFactory {
+    func makeCarouselView() -> CarouselViewable {
+        return iPadCarouselView()
+    }
+
+    func makeBentoBoxView(type: BentoBoxViewable.BentoBoxType) -> BentoBoxViewable {
+        return iPadBentoBoxView(type: type)
     }
 }
 ```
 
-Client:
+#### Client:
 
-Uses only interfaces declared by AbstractFactory and AbstractProduct classes.
+- The client uses the abstract factory to create products.
+
+- These can be used without knowing the specific classes of the products.
 
 ```swift
-class Client {
-    private var productA: AbstractProductA
-    private var productB: AbstractProductB
+class ProductView {
+    private let carouselView: CarouselViewable
+    private let bentoBoxView: BentoBoxViewable
 
-    init(factory: AbstractFactory) {
-        productA = factory.createProductA()
-        productB = factory.createProductB()
+    init(factory: AbstractComponentFactory) {
+        self.carouselView = factory.makeCarouselView()
+        self.bentoBoxView = factory.makeBentoBoxView(type: .medium)
     }
 
-    func run() {
-        print(productA.usefulFunctionA())
-        print(productB.usefulFunctionB())
+    func display() {
+        carouselView.startCarousel()
+        print("BentoBox type: \(bentoBoxView.type)")
     }
 }
+```
+
+## Example
+
+```swift
+let iPhoneComponentFactory = iPhoneComponentFactory()
+let iPhoneProductView = ProductView(factory: iPhoneComponentFactory)
+iPhoneProductView.display()
+// Output:
+// iPhone carousel started
+// BentoBox type: medium
+
+let iPadComponentFactory = iPadComponentFactory()
+let iPadProductView = ProductView(factory: iPadComponentFactory)
+iPadProductView.display()
+// Output:
+// iPad carousel started
+// BentoBox type: medium
 ```
