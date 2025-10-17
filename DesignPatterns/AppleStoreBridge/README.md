@@ -113,8 +113,8 @@ protocol RenderableProductView {
 
 ```swift
 struct AppleWatchSummaryView: RenderableProductView {
-    let product: Product
-    let componentRenderer: ProductComponentRenderer
+    private let product: Product
+    private let componentRenderer: ProductComponentRenderer
 
     func render() -> [ComponentView] {
         [
@@ -126,8 +126,8 @@ struct AppleWatchSummaryView: RenderableProductView {
 }
 
 struct AppleWatchTechSpecsView: RenderableProductView {
-    let product: Product
-    let componentRenderer: ProductComponentRenderer
+    private let product: Product
+    private let componentRenderer: ProductComponentRenderer
 
     func render() -> [ComponentView] {
         [
