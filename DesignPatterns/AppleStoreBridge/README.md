@@ -22,15 +22,15 @@
 
 - With the larger components and smaller components in mind, these can also vary based on the device used to view the product.
 
-- This give rise to a complex explosion of possibilities for how the product can be rendered.
+- This gives rise to a complex explosion of possibilities for how the product can be rendered.
 
 - To tame this complexity, the Bridge pattern can be used to separate the product view from the product components, allowing for different combinations of components to be used to render the view.
 
-- The components can then be used by concrete implementation of `ProductView`
+- The components can then be used by concrete implementations of `RenderableProductView`
 
 ## Definitions
 
-#### Implementor:
+#### Implementer:
 
 - Sets up the interface for the component renderers.
 
@@ -45,15 +45,15 @@ protocol ProductComponentRenderer {
 }
 ```
 
-#### Concrete implementos:
+#### Concrete implementers:
 
-- For each device, a set of components can be grouped as an implementor of `ProductComponentRenderer`.
+- For each device, a set of components can be grouped as an implementer of `ProductComponentRenderer`.
 
 - Each component can be rendered in a different way based on the device used.
 
 - The fonts, colors, and layout can be adjusted as needed.
 
-````swift
+```swift
 struct iPhoneProductComponentRenderer: ProductComponentRenderer {
     func renderTitleView(for product: Product) -> ComponentView {
         return ComponentView(name: "Title view for iPhone")
@@ -89,7 +89,7 @@ struct iPadProductComponentRenderer: ProductComponentRenderer {
         return ComponentView(name: "Tech specs view for iPad")
     }
 }
-````
+```
 
 #### Abstraction:
 
@@ -99,10 +99,7 @@ struct iPadProductComponentRenderer: ProductComponentRenderer {
 
 ```swift
 protocol RenderableProductView {
-    var product: Product { get }
-    var componentRenderer: ProductComponentRenderer { get }
-
-    func render()
+    func render() -> [ComponentView]
 }
 ```
 
@@ -115,37 +112,29 @@ protocol RenderableProductView {
 - Variations can be created as needed based on what the component renderer makes available.
 
 ```swift
-class AppleWatchSummaryView: RenderableProductView {
-    private(set) var views: [ComponentView] = []
-    private(set) var product: Product
-    private(set) var componentRenderer: ProductComponentRenderer
+struct AppleWatchSummaryView: RenderableProductView {
+    let product: Product
+    let componentRenderer: ProductComponentRenderer
 
-    init(product: Product, componentRenderer: ProductComponentRenderer) {
-        self.product = product
-        self.componentRenderer = componentRenderer
-    }
-
-    func render() {
-        views.append(componentRenderer.renderTitleView(for: product))
-        views.append(componentRenderer.renderPriceView(for: product))
-        views.append(componentRenderer.renderCarouselView(for: product))
+    func render() -> [ComponentView] {
+        [
+            componentRenderer.renderTitleView(for: product),
+            componentRenderer.renderPriceView(for: product),
+            componentRenderer.renderCarouselView(for: product)
+        ]
     }
 }
 
-class AppleWatchTechSpecsView: RenderableProductView {
-    private(set) var views: [ComponentView] = []
-    private(set) var product: Product
-    private(set) var componentRenderer: ProductComponentRenderer
+struct AppleWatchTechSpecsView: RenderableProductView {
+    let product: Product
+    let componentRenderer: ProductComponentRenderer
 
-    init(product: Product, componentRenderer: ProductComponentRenderer) {
-        self.product = product
-        self.componentRenderer = componentRenderer
-    }
-
-    func render() {
-        views.append(componentRenderer.renderTitleView(for: product))
-        views.append(componentRenderer.renderPriceView(for: product))
-        views.append(componentRenderer.renderTechSpecsView(for: product))
+    func render() -> [ComponentView] {
+        [
+            componentRenderer.renderTitleView(for: product),
+            componentRenderer.renderPriceView(for: product),
+            componentRenderer.renderTechSpecsView(for: product)
+        ]
     }
 }
 ```
@@ -166,9 +155,8 @@ let product = Product(name: "Apple Watch Ultra", price: 399.99)
 
 // User wants to view the summary of an Apple Watch Ultra via an iPhone
 let iPhoneRenderer = iPhoneProductComponentRenderer()
-var summaryView = AppleWatchSummaryView(product: product, componentRenderer: iPhoneRenderer)
-summaryView.render()
-print(summaryView.views.map { $0.name }.joined(separator: "\n"))
+let summaryView = AppleWatchSummaryView(product: product, componentRenderer: iPhoneRenderer)
+print(summaryView.render().map { $0.name }.joined(separator: "\n"))
 // Output:
 // Title view for iPhone
 // Price view for iPhone
@@ -176,9 +164,8 @@ print(summaryView.views.map { $0.name }.joined(separator: "\n"))
 
 // User wants to view the tech specs of an Apple Watch Ultra via an iPad
 let iPadRenderer = iPadProductComponentRenderer()
-var techSpecsView = AppleWatchTechSpecsView(product: product, componentRenderer: iPadRenderer)
-techSpecsView.render()
-print(techSpecsView.views.map { $0.name }.joined(separator: "\n"))
+let techSpecsView = AppleWatchTechSpecsView(product: product, componentRenderer: iPadRenderer)
+print(techSpecsView.render().map { $0.name }.joined(separator: "\n"))
 // Output:
 // Title view for iPad
 // Price view for iPad
