@@ -45,7 +45,7 @@ Defines the operation to traverse elements.
 
 ```swift
 protocol CatalogIterator {
-    func next() -> Category?
+    mutating func next() -> Category?
 }
 ```
 
@@ -59,10 +59,6 @@ protocol CatalogIterator {
 struct ArrayCatalogIterator: CatalogIterator {
     private let categories: [String]
     private var index = 0
-
-    init(categories: [String]) {
-        self.categories = categories
-    }
 
     mutating func next() -> Category? {
         guard index < categories.count else { return nil }
@@ -111,10 +107,6 @@ protocol CatalogCollection {
 struct ArrayCatalog: CatalogCollection {
     private let categories: [String]
 
-    init(categories: [String]) {
-        self.categories = categories
-    }
-
     func makeIterator() -> CatalogIterator {
         return ArrayCatalogIterator(categories: categories)
     }
@@ -122,10 +114,6 @@ struct ArrayCatalog: CatalogCollection {
 
 struct DictionaryCatalog: CatalogCollection {
     private let categories: [String: String]
-
-    init(categories: [String: String]) {
-        self.categories = categories
-    }
 
     func makeIterator() -> CatalogIterator {
         return DictionaryCatalogIterator(categories: categories)
