@@ -10,86 +10,156 @@
 
 ## Pattern overview
 
-- The Iterator pattern provides a way to access the elements of an aggregate object sequentially without exposing its underlying representation.
-- The pattern has two main components: the Iterator and the Aggregate.
-- The Iterator defines an interface for accessing and traversing elements, while the Aggregate defines an interface for creating an Iterator object.
+- The Iterator pattern provides a way to access elements of a sequence without exposing the underlying representation.
+
+- The underlying representation could be any collection type.
+
+- These include sets, arrays, dictionaries, linked lists, etc.
+
+- The traversal of the collection is encapsulated, and a uniform interface is provided to access the elements.
 
 ## Problem statement
 
-- We would like to provide a way to traverse products in a category, to provide a way to access the elements of an aggregate object sequentially without exposing its underlying representation.
-- This allows flexibility to change the internal representation of the collection without changing the code that uses the collection.
+- Let's imagine the Apple Store is administered via an internal app.
 
-## Domain application
+- In this app, we have a master view that displays categories, and a detail view that displays the products for a selected category.
 
-Iterator:
+- We are able to drag and drop the products into different categories, in case they are incorrectly assigned.
 
-Defines an interface for accessing and traversing elements.
+- The app is still under development, and at this point the underlying data structure for the catalog is a dictionary.
+
+- We want to avoid the problem of coupling our code to the dictionary when traversing the categories and products.
+
+- The Iterator pattern enables traversing the dictionary without exposing the underlying representation.
+
+- By providing a uniform interface to access the elements, we can easily switch the underlying data structure in the future.
+
+- In the example below, we will implement the Iterator pattern to traverse the categories in the Apple Store catalog. We'll omit the product details for simplicity.
+
+## Definitions
+
+#### Iterator:
+
+Defines the operation to traverse elements.
+
 
 ```swift
-protocol Iterator {
-    func first()
-    func next()
-    func isDone() -> Bool
-    func currentItem() -> Any
+protocol CatalogIterator {
+    mutating func next() -> Category?
 }
 ```
 
-Concretelterator:
+#### Concrete iterators:
 
-- Implements the Iterator interface.
-- Keeps track of the current position in the traversal of the aggregate.
+- Implements the `CatalogIterator` to traverse the collection.
+
+- The implementation is specific to the underlying data structure.
 
 ```swift
-class Product: Iterator {
-    private var products: [String]
-    private var current: Int = 0
+struct ArrayCatalogIterator: CatalogIterator {
+    private let categories: [String]
+    private var index = 0
 
-    init(products: [String]) {
-        self.products = products
+    mutating func next() -> Category? {
+        guard index < categories.count else { return nil }
+        let category = Category(name: categories[index])
+        index += 1
+        return category
+    }
+}
+
+struct DictionaryCatalogIterator: CatalogIterator {
+    private let categories: [String]
+    private var index = 0
+
+    init(categories: [String: String]) {
+        self.categories = categories
+            .sorted { $0.key < $1.key }
+            .map { $0.value }
     }
 
-    func first() {
-        current = 0
-    }
-
-    func next() {
-        current += 1
-    }
-
-    func isDone() -> Bool {
-        return current >= products.count
-    }
-
-    func currentItem() -> Any {
-        return products[current]
+    mutating func next() -> Category? {
+        guard index < categories.count else { return nil }
+        let category = Category(name: categories[index])
+        index += 1
+        return category
     }
 }
 ```
 
-Aggregate:
+#### Aggregate:
 
 Defines an interface for creating an Iterator object.
 
 ```swift
-protocol Aggregate {
-    func createIterator() -> Iterator
+protocol CatalogCollection {
+    func makeIterator() -> CatalogIterator
 }
 ```
 
-ConcreteAggregate:
+#### Concrete aggregates:
 
-Implements the Iterator creation interface to return an instance of the proper Concretelterator.
+- Implements the `CatalogCollection` protocol to create an iterator.
+
+- By using the iterator, we can access the elements of the collection.
 
 ```swift
-class Category: Aggregate {
-    private var products: [String] = []
+struct ArrayCatalog: CatalogCollection {
+    private let categories: [String]
 
-    func addProduct(product: String) {
-        products.append(product)
-    }
-
-    func createIterator() -> Iterator {
-        return Product(products: products)
+    func makeIterator() -> CatalogIterator {
+        return ArrayCatalogIterator(categories: categories)
     }
 }
+
+struct DictionaryCatalog: CatalogCollection {
+    private let categories: [String: String]
+
+    func makeIterator() -> CatalogIterator {
+        return DictionaryCatalogIterator(categories: categories)
+    }
+}
+```
+
+## Example: Array
+
+```swift
+struct Category {
+    let name: String
+}
+
+let categories = ["iPhone", "iPad", "Mac", "Watch"]
+let arrayCatalog = ArrayCatalog(categories: categories)
+var arrayIterator = arrayCatalog.makeIterator()
+
+while let category = arrayIterator.next() {
+    print(category.name)
+}
+// Output:
+// iPhone
+// iPad
+// Mac
+// Watch
+```
+
+## Example: Dictionary
+
+```swift
+let categoryDictionary = [
+    "1": "iPhone",
+    "2": "iPad",
+    "3": "Mac",
+    "4": "Watch"
+]
+let dictionaryCatalog = DictionaryCatalog(categories: categoryDictionary)
+var dictionaryIterator = dictionaryCatalog.makeIterator()
+
+while let category = dictionaryIterator.next() {
+    print(category.name)
+}
+// Output:
+// iPhone
+// iPad
+// Mac
+// Watch
 ```
