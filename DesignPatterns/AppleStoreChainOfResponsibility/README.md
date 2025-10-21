@@ -10,105 +10,115 @@
 
 ## Pattern overview
 
-- The Chain of Responsibility pattern is a behavioral pattern that allows more than one object to handle a request.
-- The pattern chains the receiving objects and passes the request along the chain until an object handles it.
-- For example, if an app home screen has multiple components, a sequence of service calls may be required to load the screen. These can be chained together using the pattern.
-- In addition to being an efficient way to handle a sequence of steps, the pattern allows for each one to be customised according to the requirements.
-- The request passed through the chain can be modified by each step in the chain.
+- The Chain of Responsibility pattern provides a way of linking a series of actions.
+
+- Each action has a task to perform, and once it's completed, the request is optionally passed to the next action in the chain.
+
+- This pattern allows for a clear separation of concerns and flexibility in the order of actions.
 
 ## Problem statement
 
-- When adding an item to the bag, we would like to perform an inventory check if it's not a preordered item.
-- We would also like to check if the current session is valid.
-- The two steps are required to be performed in sequence.
+- When users add a product to their bag, a series of actions need to be performed.
 
-## Domain application
+- For example, checking if the product is in stock, attempting to add it to the bag, and logging an analytics event.
 
-Handler:
+- Handling all of these actions in a single class is possible, but can lead to coupling and a lack of flexibility.
 
-- Defines an interface for handling requests.
-- Implements the successor link. (Optional)
+- The Chain of Responsibility pattern can be used to create a chain of handlers, each responsible for a specific action.
+
+- Each handler performs its specific action and then optionally passes the request to the next handler in the chain.
+
+- This enables a clear separation of concerns and allows for flexibility to add, remove, or reorder the handlers in the chain.
+
+## Definitions
+
+### Handler:
+
+- Defines the interface for handling requests and setting up the chain.
+
+- Handlers perform their action (e.g., print) and optionally forward the request to `next`.
+
+- The `Request` object can be used at any point in the chain.
+
+- The `next` property is used to maintain a reference to the next handler in the chain.
 
 ```swift
 protocol Handler {
-    var nextHandler: (any Handler)? { get set }
-    func handle(request: Request) async -> Result<Bool, Error>
+    var next: Handler? { get }
+    func handle(request: Request)
+}
+
+struct Request {
+    let productId: String
 }
 ```
 
-ConcreteHandler:
+### Concrete handlers:
 
 - Handles requests it is responsible for.
-- Can access its successor.
-- If the ConcreteHandler can handle the request, it does so; otherwise it forwards the request to its successor.
+
+- Maintains a reference to the next handler in the chain.
+
+- In this chain, before adding the product to the bag, the stock check handler checks if the product is in stock.
+
+- If it's in stock, then the `AddToBagHandler` is called.
+
+- Assuming it gets added to the bag, the logging handler is called, completing the chain.
+
+- This approach allows for flexibility in the order of the handlers while keeping a clear separation of concerns.
 
 ```swift
-class InventoryCheckHandler: Handler {
-    var inventoryService: InventoryService
-    var nextHandler: (any Handler)?
+struct StockCheckHandler: Handler {
+    let next: Handler?
 
-    init(inventoryService: InventoryService, nextHandler: (any Handler)?) {
-        self.inventoryService = inventoryService
-        self.nextHandler = nextHandler
+    func handle(request: Request) {
+        let isInStock = Bool.random()
+
+        if isInStock {
+            print("Product \(request.productId) is in stock")
+            next?.handle(request: request)
+        } else {
+            print("Product \(request.productId) is out of stock")
+        }
     }
+}
 
-    func handle(request: Request) async -> Result<Bool, Error> {
-        if request.isPreorder {
-            // No inventory check required for preordered items
-            return await nextHandler?.handle(request: request) ?? .success(true)
-        }
-        else {
-            let result = await inventoryService.checkIfProductIsInStock(productId: request.productId)
+struct AddToBagHandler: Handler {
+    let next: Handler?
 
-            switch result {
-            case .success:
-                return await nextHandler?.handle(request: request) ?? .success(true)
-            case .failure(let error):
-                return .failure(error)
-            }
+    func handle(request: Request) {
+        let addToBagSucceeded = Bool.random()
+
+        if addToBagSucceeded {
+            print("Product \(request.productId) added to bag")
+            next?.handle(request: request)
+        } else {
+            print("Failed to add product \(request.productId) to bag")
         }
+    }
+}
+
+struct LoggingHandler: Handler {
+    let next: Handler?
+
+    func handle(request: Request) {
+        print("Analytics event logged for product \(request.productId)")
     }
 }
 ```
 
-```swift
-class AuthenticationHandler: Handler {
-    var authenticationService: AuthenticationService
-    var nextHandler: (any Handler)?
-
-    init(authenticationService: AuthenticationService, nextHandler: (any Handler)?) {
-        self.authenticationService = authenticationService
-        self.nextHandler = nextHandler
-    }
-
-    func handle(request: Request) async -> Result<Bool, Error> {
-        let result = await authenticationService.checkIfSessionIsValid()
-
-        switch result {
-        case .success:
-            return await nextHandler?.handle(request: request) ?? .success(true)
-        case .failure(let error):
-            return .failure(error)
-        }
-    }
-}
-```
-
-Client:
-
-Initiates the request to a ConcreteHandler object on the chain.
+## Example
 
 ```swift
-class BagService {
-    let handler: Handler
+let loggingHandler = LoggingHandler(next: nil)
+let addToBagHandler = AddToBagHandler(next: loggingHandler)
+let stockCheckHandler = StockCheckHandler(next: addToBagHandler)
 
-    init(handler: Handler) {
-        self.handler = handler
-    }
+let request = Request(productId: "1234")
+stockCheckHandler.handle(request: request)
 
-    func addProductToBag(productId: String, isPreorder: Bool, isAuthenticated: Bool) async -> Result<Bool, Error> {
-        let request = Request(productId: productId, isPreorder: isPreorder, isAuthenticated: isAuthenticated)
-        return await handler.handle(request: request)
-    }
-}
+// Output:
+// Product 1234 is in stock
+// Product 1234 added to bag
+// Analytics event logged for product 1234
 ```
