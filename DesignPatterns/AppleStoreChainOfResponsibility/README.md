@@ -12,7 +12,7 @@
 
 - The Chain of Responsibility pattern provides a way of linking a series of actions.
 
-- Each action has a task to perform, and once it's completed, the request is passed to the next action in the chain.
+- Each action has a task to perform, and once it's completed, the request is optionally passed to the next action in the chain.
 
 - This pattern allows for a clear separation of concerns and flexibility in the order of actions.
 
@@ -26,7 +26,7 @@
 
 - The Chain of Responsibility pattern can be used to create a chain of handlers, each responsible for a specific action.
 
-- Each handler performs its specific action and then passes the request to the next handler in the chain.
+- Each handler performs its specific action and then optionally passes the request to the next handler in the chain.
 
 - This enables a clear separation of concerns and allows for flexibility to add, remove, or reorder the handlers in the chain.
 
@@ -36,7 +36,7 @@
 
 - Defines the interface for handling requests and setting up the chain.
 
-- We're using a closure to communicate the result of the request.
+- Handlers perform their action (e.g., print) and optionally forward the request to `next`.
 
 - The `Request` object can be used at any point in the chain.
 
@@ -45,8 +45,7 @@
 ```swift
 protocol Handler {
     var next: Handler? { get }
-
-    func handle(request: Request, completion: @escaping (String) -> Void)
+    func handle(request: Request)
 }
 
 struct Request {
@@ -62,60 +61,48 @@ struct Request {
 
 - In this chain, before adding the product to the bag, the stock check handler checks if the product is in stock.
 
-- If it's in stock, then the add to bag handler is called.
+- If it's in stock, then the `AddToBagHandler` is called.
 
 - Assuming it gets added to the bag, the logging handler is called, completing the chain.
 
 - This approach allows for flexibility in the order of the handlers while keeping a clear separation of concerns.
 
 ```swift
-class StockCheckHandler: Handler {
-    private(set) var next: Handler?
+struct StockCheckHandler: Handler {
+    let next: Handler?
 
-    init(next: Handler?) {
-        self.next = next
-    }
-
-    func handle(request: Request, completion: @escaping (String) -> Void) {
+    func handle(request: Request) {
         let isInStock = Bool.random()
 
         if isInStock {
-            completion("Product \(request.productId) is in stock")
-            next?.handle(request: request, completion: completion)
+            print("Product \(request.productId) is in stock")
+            next?.handle(request: request)
         } else {
-            completion("Product \(request.productId) is out of stock")
+            print("Product \(request.productId) is out of stock")
         }
     }
 }
 
-class AddToBagHandler: Handler {
-    private(set) var next: Handler?
+struct AddToBagHandler: Handler {
+    let next: Handler?
 
-    init(next: Handler?) {
-        self.next = next
-    }
-
-    func handle(request: Request, completion: @escaping (String) -> Void) {
+    func handle(request: Request) {
         let addToBagSucceeded = Bool.random()
 
         if addToBagSucceeded {
-            completion("Product \(request.productId) added to bag")
-            next?.handle(request: request, completion: completion)
+            print("Product \(request.productId) added to bag")
+            next?.handle(request: request)
         } else {
-            completion("Failed to add product \(request.productId) to bag")
+            print("Failed to add product \(request.productId) to bag")
         }
     }
 }
 
-class LoggingHandler: Handler {
-    private(set) var next: Handler?
+struct LoggingHandler: Handler {
+    let next: Handler?
 
-    init(next: Handler?) {
-        self.next = next
-    }
-
-    func handle(request: Request, completion: @escaping (String) -> Void) {
-        completion("Analytics event logged for product \(request.productId)")
+    func handle(request: Request) {
+        print("Analytics event logged for product \(request.productId)")
     }
 }
 ```
@@ -128,9 +115,7 @@ let addToBagHandler = AddToBagHandler(next: loggingHandler)
 let stockCheckHandler = StockCheckHandler(next: addToBagHandler)
 
 let request = Request(productId: "1234")
-stockCheckHandler.handle(request: request) { result in
-    print(result)
-}
+stockCheckHandler.handle(request: request)
 
 // Output:
 // Product 1234 is in stock
