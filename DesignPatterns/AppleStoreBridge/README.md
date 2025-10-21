@@ -116,6 +116,11 @@ struct AppleWatchSummaryView: RenderableProductView {
     private let product: Product
     private let componentRenderer: ProductComponentRenderer
 
+    init(product: Product, componentRenderer: ProductComponentRenderer) {
+        self.product = product
+        self.componentRenderer = componentRenderer
+    }
+
     func render() -> [ComponentView] {
         [
             componentRenderer.renderTitleView(for: product),
@@ -128,6 +133,11 @@ struct AppleWatchSummaryView: RenderableProductView {
 struct AppleWatchTechSpecsView: RenderableProductView {
     private let product: Product
     private let componentRenderer: ProductComponentRenderer
+
+    init(product: Product, componentRenderer: ProductComponentRenderer) {
+        self.product = product
+        self.componentRenderer = componentRenderer
+    }
 
     func render() -> [ComponentView] {
         [
