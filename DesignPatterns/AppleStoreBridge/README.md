@@ -10,88 +10,174 @@
 
 ## Pattern overview
 
-- The Bridge pattern is a structural design pattern that decouples an abstraction from its implementation, allowing the two to evolve independently. This is particularly useful in scenarios where an abstraction can have multiple implementations, and those implementations can change over time.
-- For example, consider a blog application that allows users to create and publish posts.
-- The application may have a `Post` class that represents a blog post, and a `PostRenderer` class that renders the post in different formats (e.g., HTML, Markdown, etc.). The `Post` class may have a `render` method that delegates the rendering to the `PostRenderer` class.
-- The `PostRenderer` class may have multiple implementations, such as `HtmlPostRenderer` and `MarkdownPostRenderer`, each of which renders the post in a different format.
-- By using the Bridge pattern, we can decouple the `Post` class from the `PostRenderer` class, allowing the two to evolve independently.
-- This makes it easier to add new rendering formats or change the existing ones without modifying the `Post` class.
+- The Bridge pattern allows for two separate but related objects to work together while keeping them decoupled.
+
+- It is particularly useful when there are multiple variations of both the abstraction and the implementation that need to be combined in different ways.
 
 ## Problem statement
 
-- We would like to develop the checkout and payment handling separately.
-- The Bridge pattern allows us to do this by decoupling the payment processing and checkout implementations.
-- This allows us to change the payment providers independently.
+- Given a particular Apple Store product object, there are different visual representations of it that are possible, such as a summary view, a tech specs view, etc.
 
-## Domain application
+- Each product also has more granular components, such as a title view, a price view, a carousel view, etc.
 
-Abstraction:
+- With the larger components and smaller components in mind, these can also vary based on the device used to view the product.
 
-- The high-level interface that defines the abstraction
-- Maintains a reference to an object of type Implementor.
+- This gives rise to a complex explosion of possibilities for how the product can be rendered.
+
+- To tame this complexity, the Bridge pattern can be used to separate the product view from the product components, allowing for different combinations of components to be used to render the view.
+
+- The components can then be used by concrete implementations of `RenderableProductView`
+
+## Definitions
+
+#### Implementer:
+
+- Sets up the interface for the component renderers.
+
+- These can be grouped by device type, such as iPhone, iPad, etc.
 
 ```swift
-protocol PaymentBridge {
-    func processPayment(amount: Double) async -> Result<String, Error>
-    func updateAddress(_ address: String)
+protocol ProductComponentRenderer {
+    func renderTitleView(for product: Product) -> ComponentView
+    func renderPriceView(for product: Product) -> ComponentView
+    func renderCarouselView(for product: Product) -> ComponentView
+    func renderTechSpecsView(for product: Product) -> ComponentView
 }
 ```
 
-Refined Abstraction:
+#### Concrete implementers:
 
-Extends the interface defined by the Abstraction.
+- For each device, a set of components can be grouped as an implementer of `ProductComponentRenderer`.
+
+- Each component can be rendered in a different way based on the device used.
+
+- The fonts, colors, and layout can be adjusted as needed.
 
 ```swift
-class Checkout: PaymentBridge {
-    let paymentProvider: PaymentProvider
-
-    init(paymentProvider: PaymentProvider) {
-        self.paymentProvider = paymentProvider
+struct iPhoneProductComponentRenderer: ProductComponentRenderer {
+    func renderTitleView(for product: Product) -> ComponentView {
+        return ComponentView(name: "Title view for iPhone")
     }
 
-    func processPayment(amount: Double) async -> Result<String, Error> {
-        let result = await paymentProvider.processPayment(amount: amount)
-
-        switch result {
-        case .success(let message):
-            return .success(message)
-        case .failure(let error):
-            return .failure(error)
-        }
+    func renderPriceView(for product: Product) -> ComponentView {
+        return ComponentView(name: "Price view for iPhone")
     }
 
-    func updateAddress(_ address: String) {
-        // Other features can be added that relate to the Checkout
+    func renderCarouselView(for product: Product) -> ComponentView {
+        return ComponentView(name: "Carousel view for iPhone")
+    }
+
+    func renderTechSpecsView(for product: Product) -> ComponentView {
+        return ComponentView(name: "Tech specs view for iPhone")
+    }
+}
+
+struct iPadProductComponentRenderer: ProductComponentRenderer {
+    func renderTitleView(for product: Product) -> ComponentView {
+        return ComponentView(name: "Title view for iPad")
+    }
+
+    func renderPriceView(for product: Product) -> ComponentView {
+        return ComponentView(name: "Price view for iPad")
+    }
+
+    func renderCarouselView(for product: Product) -> ComponentView {
+        return ComponentView(name: "Carousel view for iPad")
+    }
+
+    func renderTechSpecsView(for product: Product) -> ComponentView {
+        return ComponentView(name: "Tech specs view for iPad")
     }
 }
 ```
 
-Implementor:
+#### Abstraction:
 
-- Defines the interface for implementation classes.
-- This interface doesn't have to correspond exactly to Abstraction's interface; in fact the two interfaces can be quite different.
-- Typically the Implementor interface provides only primitive operations, and Abstraction defines higher-level operations based on these primitives.
+- The interface for the product view.
+
+- Based on the component renderer, we are able to generate various visual representations of the product.
 
 ```swift
-protocol PaymentProvider {
-    func processPayment(amount: Double) async -> Result<String, Error>
+protocol RenderableProductView {
+    func render() -> [ComponentView]
 }
 ```
 
-Concrete Implementor:
+#### Refined Abstraction:
 
-Implements the Implementor interface and defines its concrete implementation.
+- The implementation for each product view.
 
-````swift
-class ApplePayPaymentProvider: PaymentProvider {
-    func processPayment(amount: Double) async -> Result<String, Error> {
-        return .success("Apple Pay payment succeeded.")
+- Each product view can be rendered in different ways based on the device used via the component renderer.
+
+- Variations can be created as needed based on what the component renderer makes available.
+
+```swift
+struct AppleWatchSummaryView: RenderableProductView {
+    private let product: Product
+    private let componentRenderer: ProductComponentRenderer
+
+    init(product: Product, componentRenderer: ProductComponentRenderer) {
+        self.product = product
+        self.componentRenderer = componentRenderer
+    }
+
+    func render() -> [ComponentView] {
+        [
+            componentRenderer.renderTitleView(for: product),
+            componentRenderer.renderPriceView(for: product),
+            componentRenderer.renderCarouselView(for: product)
+        ]
     }
 }
 
-class CreditCardPaymentProvider: PaymentProvider {
-    func processPayment(amount: Double) async -> Result<String, Error> {
-        return .success("Visa payment succeeded.")
+struct AppleWatchTechSpecsView: RenderableProductView {
+    private let product: Product
+    private let componentRenderer: ProductComponentRenderer
+
+    init(product: Product, componentRenderer: ProductComponentRenderer) {
+        self.product = product
+        self.componentRenderer = componentRenderer
+    }
+
+    func render() -> [ComponentView] {
+        [
+            componentRenderer.renderTitleView(for: product),
+            componentRenderer.renderPriceView(for: product),
+            componentRenderer.renderTechSpecsView(for: product)
+        ]
     }
 }
-````
+```
+
+## Example
+
+```swift
+struct ComponentView {
+    let name: String
+}
+
+struct Product {
+    let name: String
+    let price: Double
+}
+
+let product = Product(name: "Apple Watch Ultra", price: 399.99)
+
+// User wants to view the summary of an Apple Watch Ultra via an iPhone
+let iPhoneRenderer = iPhoneProductComponentRenderer()
+let summaryView = AppleWatchSummaryView(product: product, componentRenderer: iPhoneRenderer)
+print(summaryView.render().map { $0.name }.joined(separator: "\n"))
+// Output:
+// Title view for iPhone
+// Price view for iPhone
+// Carousel view for iPhone
+
+// User wants to view the tech specs of an Apple Watch Ultra via an iPad
+let iPadRenderer = iPadProductComponentRenderer()
+let techSpecsView = AppleWatchTechSpecsView(product: product, componentRenderer: iPadRenderer)
+print(techSpecsView.render().map { $0.name }.joined(separator: "\n"))
+// Output:
+// Title view for iPad
+// Price view for iPad
+// Tech specs view for iPad
+```
