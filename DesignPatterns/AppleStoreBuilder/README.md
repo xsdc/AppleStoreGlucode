@@ -51,7 +51,7 @@ struct AppleWatch {
 
 - Associated types are used here so that each concrete builder can define its own enum types for size, material, and band.
 
-- Compare the `Series10Builder` and `HèrmesSeries10Builder` enum types to see this in action.
+- Compare the `Series10Builder` and `HermesSeries10Builder` enum types to see this in action.
 
 - The protocol makes use of a fluent interface, allowing for the chaining of builder methods.
 
@@ -72,7 +72,7 @@ protocol AppleWatchBuilder {
 
 - Conforms to the builder protocol and provides an implementation for building the product.
 
-- Two concrete builders are defined here: `Series10Builder` and `HèrmesSeries10Builder`.
+- Two concrete builders are defined here: `Series10Builder` and `HermesSeries10Builder`.
 
 - Each one is tailored to a specific collection of Apple Watch.
 
@@ -106,16 +106,19 @@ class Series10Builder: AppleWatchBuilder {
     typealias MaterialType = Material
     typealias BandType = Band
 
+    @discardableResult
     func setSize(_ size: Size) -> Self {
         appleWatch.size = size.rawValue
         return self
     }
 
+    @discardableResult
     func setMaterial(_ material: Material) -> Self {
         appleWatch.material = material.rawValue
         return self
     }
 
+    @discardableResult
     func setBand(_ band: Band) -> Self {
         appleWatch.band = band.rawValue
         return self
@@ -126,7 +129,7 @@ class Series10Builder: AppleWatchBuilder {
     }
 }
 
-class HèrmesSeries10Builder: AppleWatchBuilder {
+class HermesSeries10Builder: AppleWatchBuilder {
     private var appleWatch = AppleWatch(
         collection: "Hèrmes Series 10",
         size: Size.fortyTwo.rawValue,
@@ -152,16 +155,19 @@ class HèrmesSeries10Builder: AppleWatchBuilder {
     typealias MaterialType = Material
     typealias BandType = Band
 
+    @discardableResult
     func setSize(_ size: Size) -> Self {
         appleWatch.size = size.rawValue
         return self
     }
 
+    @discardableResult
     func setMaterial(_ material: Material) -> Self {
         appleWatch.material = material.rawValue
         return self
     }
 
+    @discardableResult
     func setBand(_ band: Band) -> Self {
         appleWatch.band = band.rawValue
         return self
@@ -176,21 +182,21 @@ class HèrmesSeries10Builder: AppleWatchBuilder {
 ## Example
 
 ```swift
-let series10 = Series10Builder()
+let series10Builder = Series10Builder()
 
-print(series10.build()) // Default Series 10 Apple Watch
+print(series10Builder.build()) // Default Series 10 Apple Watch
 // Output: AppleWatch(collection: "Series 10", size: "42mm", material: "Aluminum", band: "Sport Band")
 
-series10.setSize(.fortySix).setMaterial(.titanium).setBand(.milaneseLoop) // Update Series 10 Apple Watch
-print(series10.build())
+series10Builder.setSize(.fortySix).setMaterial(.titanium).setBand(.milaneseLoop) // Update Series 10 Apple Watch
+print(series10Builder.build())
 // Output: AppleWatch(collection: "Series 10", size: "46mm", material: "Titanium", band: "Milanese Loop")
 
-let hermesSeries10 = HèrmesSeries10Builder()
+let hermesSeries10Builder = HermesSeries10Builder()
 
-print(hermesSeries10.build()) // Default Hèrmes Series 10 Apple Watch
+print(hermesSeries10Builder.build()) // Default Hèrmes Series 10 Apple Watch
 // Output: AppleWatch(collection: "Hèrmes Series 10", size: "42mm", material: "Titanium", band: "Torsade Single Tour")
 
-hermesSeries10.setSize(.fortySix).setMaterial(.titanium).setBand(.grand) // Update Hèrmes Series 10 Apple Watch
-print(hermesSeries10.build())
+hermesSeries10Builder.setSize(.fortySix).setMaterial(.titanium).setBand(.grand) // Update Hèrmes Series 10 Apple Watch
+print(hermesSeries10Builder.build())
 // Output: AppleWatch(collection: "Hèrmes Series 10", size: "46mm", material: "Titanium", band: "Grand H")
 ```
