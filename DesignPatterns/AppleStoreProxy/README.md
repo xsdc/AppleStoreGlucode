@@ -10,11 +10,11 @@
 
 ## Pattern overview
 
-- The Proxy pattern provides a layer that may be used to add behaviour to a class.
+- The Proxy pattern provides a stand-in that controls access to another object.
 
-- Common uses include controlling access to a class, adding logging, or to add caching.
+- It is used in situations where you want to control access to a class without changing the class itself; or where the class is defined in a 3rd party library, and therefore can't be modified. 
 
-- It is used in situations where you want to add behaviour to a class without changing the class itself.
+- Common uses include protection/authorization (protection proxy), lazy initialization (virtual proxy), remote access (remote proxy), and caching.
 
 ## Problem statement
 
@@ -22,19 +22,35 @@
 
 - This is done in the `Bag` class.
 
-- We would like to add event logging via an analytics service to the `Bag` class, but we do not want to modify the class itself.
+- We need to ensure only authenticated users with the correct permission can modify the bag.
 
-- To avoid the issue of adding logging to the `Bag` class, we can use the Proxy pattern.
+- We do not want to modify the `Bag` class itself.
 
-- The proxy pattern allows us to separate the analytics logic from the `Bag` class, adhering to the single responsibility principle.
+- The Proxy pattern allows us to enforce access rules before delegating to the `Bag`, keeping responsibilities separate and the real subject unchanged.
 
 ## Definitions
 
+#### Subject:
+
+- Defines the common protocol for the real subject and the proxy.
+
+- By defining a common protocol, we can use the proxy in place of the real subject.
+
+- The proxy will control access to the real subject `Bag` by checking session state before delegating.
+
+```swift
+protocol ProductManaging {
+    func addProduct(_ product: Product)
+    func removeProduct(_ product: Product)
+    func clearAllProducts()
+}
+```
+
 #### Real subject:
 
-- The object to which we want to add behavior.
+- The object whose access we want to control.
 
-- In our scenario, this is an existing `Bag` struct to which we would like to add analytics.
+- In our scenario, this is an existing `Bag` struct.
 
 ```swift
 struct Bag: ProductManaging {
@@ -52,54 +68,46 @@ struct Bag: ProductManaging {
 }
 ```
 
-#### Subject:
-
-- Defines the common protocol for the real subject and the proxy.
-
-- By defining a common protocol, we can use the proxy in place of the real subject.
-
-- The proxy will be used to add the additional analytics behaviour to the real subject `Bag`, without changing it.
-
-```swift
-protocol ProductManaging {
-    func addProduct(_ product: Product)
-    func removeProduct(_ product: Product)
-    func clearAllProducts()
-}
-```
-
 #### Proxy:
 
 - Maintains a reference to the real subject, via dependency injection.
 
-- Share a protocol with the real subject so that the proxy can be used anywhere the real subject is expected.
+- Shares a protocol with the real subject so that the proxy can be used anywhere the real subject is expected.
 
-- We can now add the analytics behaviour to the proxy without changing the real subject, while still making use of its functionality.
+- Enforces access checks (authentication/authorization) before delegating to the real subject.
 
 ```swift
-struct BagWithAnalyticsProxy: ProductManaging {
-    let bag: ProductManaging
+struct UserSession {
+    let isLoggedIn: Bool
+    let canModifyBag: Bool
+}
+
+struct BagProtectionProxy: ProductManaging {
+    private let bag: ProductManaging
+    private let session: UserSession
 
     func addProduct(_ product: Product) {
+        guard session.isLoggedIn && session.canModifyBag else {
+            print("Access denied: insufficient permissions")
+            return
+        }
         bag.addProduct(product)
-
-        logAnalyticsEvent(withID: "productAddedFromBag")
     }
 
     func removeProduct(_ product: Product) {
+        guard session.isLoggedIn && session.canModifyBag else {
+            print("Access denied: insufficient permissions")
+            return
+        }
         bag.removeProduct(product)
-
-        logAnalyticsEvent(withID: "productRemovedFromBag")
     }
 
     func clearAllProducts() {
+        guard session.isLoggedIn && session.canModifyBag else {
+            print("Access denied: insufficient permissions")
+            return
+        }
         bag.clearAllProducts()
-
-        logAnalyticsEvent(withID: "allProductsRemovedFromBag")
-    }
-
-    private func logAnalyticsEvent(withID id: String) {
-        print("Analytics event logged with identifier: \(id)")
     }
 }
 ```
@@ -113,27 +121,36 @@ struct Product {
 }
 
 let bag = Bag()
-let bagWithAnalyticsProxy = BagWithAnalyticsProxy(bag: bag)
 
-bagWithAnalyticsProxy.addProduct(
+let deniedSession = UserSession(isLoggedIn: false, canModifyBag: false)
+let deniedProxy = BagProtectionProxy(bag: bag, session: deniedSession)
+
+deniedProxy.addProduct(
+    Product(name: "iPhone", price: 999.99)
+)
+
+// Output:
+// Access denied: insufficient permissions
+
+let authorizedSession = UserSession(isLoggedIn: true, canModifyBag: true)
+let authorizedProxy = BagProtectionProxy(bag: bag, session: authorizedSession)
+
+authorizedProxy.addProduct(
     Product(name: "iPhone", price: 999.99)
 )
 
 // Output:
 // Product added to bag
-// Analytics event logged with identifier: productAddedFromBag
 
-bagWithAnalyticsProxy.removeProduct(
+authorizedProxy.removeProduct(
     Product(name: "iPhone", price: 999.99)
 )
 
 // Output:
 // Product removed from bag
-// Analytics event logged with identifier: productRemovedFromBag
 
-bagWithAnalyticsProxy.clearAllProducts()
+authorizedProxy.clearAllProducts()
 
 // Output:
 // Bag has been cleared
-// Analytics event logged with identifier: allProductsRemovedFromBag
 ```
