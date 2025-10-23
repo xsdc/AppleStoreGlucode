@@ -51,13 +51,13 @@ struct Settings {
 }
 
 struct MailNotificationAPI {
-    func sendMail(withText: String) {
+    func sendMail(with text: String) {
         print("Mail sent with text: \(text)")
     }
 }
 
 struct MessageNotificationAPI {
-    func sendMessage(withText: String) {
+    func sendMessage(with text: String) {
         print("Message sent with text: \(text)")
     }
 }
@@ -78,9 +78,9 @@ struct NotificationFacade {
     func send(text: String) {
         switch settings.notificationType {
         case .mail:
-            mailNotificationAPI.sendMail(withText: text)
+            mailNotificationAPI.sendMail(with: text)
         case .message:
-            messageNotificationAPI.sendMessage(withText: text)
+            messageNotificationAPI.sendMessage(with: text)
         }
     }
 }
