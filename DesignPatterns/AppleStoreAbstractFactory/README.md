@@ -91,7 +91,7 @@ struct IPadBentoBoxView: BentoBoxView {
 
 #### Abstract factory:
 
-- Defines a protocol that each concrete factory must implement to produce the related products of a family, with each concrete factory returning device-specific variants.
+- Defines a protocol that each concrete factory must implement to produce the related products of a family. Each concrete factory returns device-specific variants.
 
 ```swift
 protocol AbstractComponentFactory {
@@ -102,7 +102,7 @@ protocol AbstractComponentFactory {
 
 #### Concrete factory:
 
-Implements the protocol declared by the abstract factory.
+- Implements the abstract factory protocol to produce device-specific products.
 
 ```swift
 struct IPhoneComponentFactory: AbstractComponentFactory {
