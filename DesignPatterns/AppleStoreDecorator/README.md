@@ -34,7 +34,7 @@ Defines the protocol for objects that can have responsibilities added to them dy
 
 ```swift
 protocol PriceProviding {
-    var price: Double { get }
+    var price: Decimal { get }
 }
 ```
 
@@ -43,36 +43,32 @@ protocol PriceProviding {
 Defines the base products.
 
 ```swift
-class MacBookProProduct: PriceProviding {
-    var price: Double {
-        return 5000.00
-    }
+struct MacBookProProduct: PriceProviding {
+    let price: Decimal = 5000
 }
 
-class VisionProProduct: PriceProviding {
-    var price: Double {
-        return 3500.00
-    }
+struct VisionProProduct: PriceProviding {
+    let price: Decimal = 3500
 }
 ```
 
 #### Decorator:
 
-- Provides the base class for all decorators.
+- Provides wrapper types that conform to `PriceProviding`.
 
-- They alway contain a base product, that can then have options added to it.
+- They always contain a decorated subject that can have options added to it.
 
 ```swift
-class PriceDecorator: PriceProviding {
-    private let product: PriceProviding
+struct StoragePrice: PriceProviding {
+    private let decoratedSubject: any PriceProviding
+    private let storagePrice: Decimal
 
-    init(product: PriceProviding) {
-        self.product = product
+    init(decoratedSubject: any PriceProviding, storagePrice: Decimal) {
+        self.decoratedSubject = decoratedSubject
+        self.storagePrice = storagePrice
     }
 
-    var price: Double {
-        return product.price
-    }
+    var price: Decimal { decoratedSubject.price + storagePrice }
 }
 ```
 
@@ -80,32 +76,18 @@ class PriceDecorator: PriceProviding {
 
 - The concrete decorators add new options to the base product.
 
-- They override the `price` computed property to add the cost of the new option to the base product.
+- They compute `price` by adding their own cost to the decorated subject.
 
 ```swift
-class StoragePriceDecorator: PriceDecorator {
-    enum StorageOption: Double {
-        case gb256 = 100.00
-        case gb512 = 300.00
-        case tb1 = 500.00
+struct AppleCare: PriceProviding {
+    private let decoratedSubject: any PriceProviding
+    private let addOnPrice: Decimal = 200
+
+    init(decoratedSubject: any PriceProviding) {
+        self.decoratedSubject = decoratedSubject
     }
 
-    private let storageOption: StorageOption
-
-    init(product: PriceProviding, storageOption: StorageOption) {
-        self.storageOption = storageOption
-        super.init(product: product)
-    }
-
-    override var price: Double {
-        return super.price + storageOption.rawValue
-    }
-}
-
-class AppleCarePriceDecorator: PriceDecorator {
-    override var price: Double {
-        return super.price + 200.00
-    }
+    var price: Decimal { decoratedSubject.price + Self.addOnPrice }
 }
 ```
 
@@ -113,18 +95,18 @@ class AppleCarePriceDecorator: PriceDecorator {
 
 ```swift
 let macBookPro = MacBookProProduct()
-let macBookProWithStorage = StoragePriceDecorator(product: macBookPro, storageOption: .tb1)
-let macBookProWithStorageAndAppleCare = AppleCarePriceDecorator(product: macBookProWithStorage)
+let macBookProWithStorage = StoragePrice(decoratedSubject: macBookPro, storagePrice: 500)
+let macBookProWithStorageAndAppleCare = AppleCare(decoratedSubject: macBookProWithStorage)
 
-print(macBookPro.price) // 5000.0
-print(macBookProWithStorage.price) // 5500.0
-print(macBookProWithStorageAndAppleCare.price) // 5700.0
+print(macBookPro.price) // 5000
+print(macBookProWithStorage.price) // 5500
+print(macBookProWithStorageAndAppleCare.price) // 5700
 
 let visionPro = VisionProProduct()
-let visionProWithStorage = StoragePriceDecorator(product: visionPro, storageOption: .gb512)
-let visionProWithStorageAndAppleCare = AppleCarePriceDecorator(product: visionProWithStorage)
+let visionProWithStorage = StoragePrice(decoratedSubject: visionPro, storagePrice: 300)
+let visionProWithStorageAndAppleCare = AppleCare(decoratedSubject: visionProWithStorage)
 
-print(visionPro.price) // 3500.0
-print(visionProWithStorage.price) // 3800.0
-print(visionProWithStorageAndAppleCare.price) // 4000.0
+print(visionPro.price) // 3500
+print(visionProWithStorage.price) // 3800
+print(visionProWithStorageAndAppleCare.price) // 4000
 ```
