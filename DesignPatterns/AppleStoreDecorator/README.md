@@ -44,11 +44,11 @@ Defines the base products.
 
 ```swift
 struct MacBookProProduct: PriceProviding {
-    let price: Decimal = 5_000
+    let price: Decimal = 5000
 }
 
 struct VisionProProduct: PriceProviding {
-    let price: Decimal = 3_500
+    let price: Decimal = 3500
 }
 ```
 
@@ -62,6 +62,7 @@ struct VisionProProduct: PriceProviding {
 struct StoragePrice: PriceProviding {
     private let decoratedSubject: any PriceProviding
     private let storagePrice: Decimal
+
     init(decoratedSubject: any PriceProviding, storagePrice: Decimal) {
         self.decoratedSubject = decoratedSubject
         self.storagePrice = storagePrice
@@ -80,7 +81,7 @@ struct StoragePrice: PriceProviding {
 ```swift
 struct AppleCare: PriceProviding {
     private let decoratedSubject: any PriceProviding
-    private static let addOnPrice: Decimal = 200
+    private let addOnPrice: Decimal = 200
 
     init(decoratedSubject: any PriceProviding) {
         self.decoratedSubject = decoratedSubject
