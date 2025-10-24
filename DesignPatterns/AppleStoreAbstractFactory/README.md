@@ -44,13 +44,9 @@ protocol CarouselView {
     func startCarousel()
 }
 
-protocol BentoBoxView {
-    enum BentoBoxType {
-        case small
-        case medium
-        case large
-    }
+enum BentoBoxType { case small, medium, large }
 
+protocol BentoBoxView {
     var type: BentoBoxType { get }
 }
 ```
@@ -95,14 +91,12 @@ struct IPadBentoBoxView: BentoBoxView {
 
 #### Abstract factory:
 
-- Declares a protocol for each product family.
-
-- Each protocol declares a set of methods for creating each product.
+- Defines a protocol that each concrete factory must implement to produce the related products of a family, with each concrete factory returning device-specific variants.
 
 ```swift
 protocol AbstractComponentFactory {
     func makeCarouselView() -> CarouselView
-    func makeBentoBoxView(type: BentoBoxView.BentoBoxType) -> BentoBoxView
+    func makeBentoBoxView(type: BentoBoxType) -> BentoBoxView
 }
 ```
 
@@ -111,23 +105,23 @@ protocol AbstractComponentFactory {
 Implements the protocol declared by the abstract factory.
 
 ```swift
-class IPhoneComponentFactory: AbstractComponentFactory {
+struct IPhoneComponentFactory: AbstractComponentFactory {
     func makeCarouselView() -> CarouselView {
-        return IPhoneCarouselView()
+        IPhoneCarouselView()
     }
 
-    func makeBentoBoxView(type: BentoBoxView.BentoBoxType) -> BentoBoxView {
-        return IPhoneBentoBoxView(type: type)
+    func makeBentoBoxView(type: BentoBoxType) -> BentoBoxView {
+        IPhoneBentoBoxView(type: type)
     }
 }
 
-class IPadComponentFactory: AbstractComponentFactory {
+struct IPadComponentFactory: AbstractComponentFactory {
     func makeCarouselView() -> CarouselView {
-        return IPadCarouselView()
+        IPadCarouselView()
     }
 
-    func makeBentoBoxView(type: BentoBoxView.BentoBoxType) -> BentoBoxView {
-        return IPadBentoBoxView(type: type)
+    func makeBentoBoxView(type: BentoBoxType) -> BentoBoxView {
+        IPadBentoBoxView(type: type)
     }
 }
 ```
@@ -139,7 +133,7 @@ class IPadComponentFactory: AbstractComponentFactory {
 - These can be used without knowing the specific classes of the products.
 
 ```swift
-class ProductView {
+struct ProductView {
     private let carouselView: CarouselView
     private let bentoBoxView: BentoBoxView
 
