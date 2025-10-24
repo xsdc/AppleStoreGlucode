@@ -10,57 +10,146 @@
 
 ## Pattern overview
 
-- The Proxy pattern provides a layer that may be used to add behavior to a class.
-- Common uses include controlling access to a class, adding logging, or to add caching.
-- It is often used in situations where you want to add behavior to a class without changing the class itself.
+- The Proxy pattern provides a stand-in that controls access to another object.
+
+- It is used in situations where you want to control access to a class without changing the class itself; or where the class is defined in a 3rd party library, and therefore can't be modified. 
+
+- Common uses include protection/authorization (protection proxy), lazy initialization (virtual proxy), remote access (remote proxy), and caching.
 
 ## Problem statement
 
-- We want to add an authentication check to a service that clears a users Apple Store bag.
-- The proxy pattern allows us to add this layer of authentication without changing the bag service.
+- Apple Store users are able to add and remove items from their bag.
 
-## Domain application
+- This is done in the `Bag` class.
 
-Proxy:
+- We need to ensure only authenticated users with the correct permission can modify the bag.
 
-- Maintains a reference that lets the proxy access the real subject.
-- Proxy may refer to a Subject if the RealSubject and Subject interfaces are the same.
-- Provides an interface identical to Subject's so that a proxy can by substituted for the real subject.
-- Controls access to the real subject and may be responsible for creating and deleting it.
+- We do not want to modify the `Bag` class itself.
+
+- The Proxy pattern allows us to enforce access rules before delegating to the `Bag`, keeping responsibilities separate and the real subject unchanged.
+
+## Definitions
+
+#### Subject:
+
+- Defines the common protocol for the real subject and the proxy.
+
+- By defining a common protocol, we can use the proxy in place of the real subject.
+
+- The proxy will control access to the real subject `Bag` by checking session state before delegating.
 
 ```swift
-class BagServiceWithAuthentication: AuthenticatedBagService {
-    let authenticationService: AuthenticationService
-    let bagService: BaseBagService
+protocol ProductManaging {
+    func addProduct(_ product: Product)
+    func removeProduct(_ product: Product)
+    func clearAllProducts()
+}
+```
 
-    func clear() -> Bool {
-        if authenticationService.checkIfSessionIsValid() {
-            return bagService.clear()
-        } else {
+#### Real subject:
+
+- The object whose access we want to control.
+
+- In our scenario, this is an existing `Bag` struct.
+
+```swift
+struct Bag: ProductManaging {
+    func addProduct(_ product: Product) {
+        print("Product added to bag")
+    }
+
+    func removeProduct(_ product: Product) {
+        print("Product removed from bag")
+    }
+
+    func clearAllProducts() {
+        print("Bag has been cleared")
+    }
+}
+```
+
+#### Proxy:
+
+- Maintains a reference to the real subject, via dependency injection.
+
+- Shares a protocol with the real subject so that the proxy can be used anywhere the real subject is expected.
+
+- Enforces access checks (authentication/authorization) before delegating to the real subject.
+
+```swift
+struct UserSession {
+    let isLoggedIn: Bool
+    let canModifyBag: Bool
+}
+
+struct BagProtectionProxy: ProductManaging {
+    private let bag: ProductManaging
+    private let session: UserSession
+
+    private func hasAccess() -> Bool {
+        guard session.isLoggedIn && session.canModifyBag else {
+            print("Access denied: insufficient permissions")
             return false
         }
-    }
-}
-```
-
-Subject:
-
-Defines the common interface for RealSubject and Proxy so that a Proxy can be used anywhere a RealSubject is expected.
-
-```swift
-protocol AuthenticatedBagService {
-    func clear()
-}
-```
-
-RealSubject:
-
-Defines the real object that the proxy represents.
-
-```swift
-class BagService: AuthenticatedBagService {
-    func clear() -> Bool {
         return true
     }
+
+    func addProduct(_ product: Product) {
+        guard hasAccess() else { return }
+        bag.addProduct(product)
+    }
+
+    func removeProduct(_ product: Product) {
+        guard hasAccess() else { return }
+        bag.removeProduct(product)
+    }
+
+    func clearAllProducts() {
+        guard hasAccess() else { return }
+        bag.clearAllProducts()
+    }
 }
+```
+
+## Example
+
+```swift
+struct Product {
+    let name: String
+    let price: Double
+}
+
+let bag = Bag()
+
+let deniedSession = UserSession(isLoggedIn: false, canModifyBag: false)
+let deniedProxy = BagProtectionProxy(bag: bag, session: deniedSession)
+
+deniedProxy.addProduct(
+    Product(name: "iPhone", price: 999.99)
+)
+
+// Output:
+// Access denied: insufficient permissions
+
+let authorizedSession = UserSession(isLoggedIn: true, canModifyBag: true)
+let authorizedProxy = BagProtectionProxy(bag: bag, session: authorizedSession)
+
+authorizedProxy.addProduct(
+    Product(name: "iPhone", price: 999.99)
+)
+
+// Output:
+// Product added to bag
+
+authorizedProxy.removeProduct(
+    Product(name: "iPhone", price: 999.99)
+)
+
+// Output:
+// Product removed from bag
+
+authorizedProxy.clearAllProducts()
+
+// Output:
+// Bag has been cleared
 ```
