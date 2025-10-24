@@ -86,27 +86,26 @@ struct BagProtectionProxy: ProductManaging {
     private let bag: ProductManaging
     private let session: UserSession
 
-    func addProduct(_ product: Product) {
+    private func hasAccess() -> Bool {
         guard session.isLoggedIn && session.canModifyBag else {
             print("Access denied: insufficient permissions")
-            return
+            return false
         }
+        return true
+    }
+
+    func addProduct(_ product: Product) {
+        guard hasAccess() else { return }
         bag.addProduct(product)
     }
 
     func removeProduct(_ product: Product) {
-        guard session.isLoggedIn && session.canModifyBag else {
-            print("Access denied: insufficient permissions")
-            return
-        }
+        guard hasAccess() else { return }
         bag.removeProduct(product)
     }
 
     func clearAllProducts() {
-        guard session.isLoggedIn && session.canModifyBag else {
-            print("Access denied: insufficient permissions")
-            return
-        }
+        guard hasAccess() else { return }
         bag.clearAllProducts()
     }
 }
