@@ -39,12 +39,12 @@ For the Apple Store app, we encounter the need to create components that vary ba
 - We've kept it simple by only including two components: a carousel and a bento box.
 
 ```swift
-protocol CarouselViewable {
+protocol CarouselView {
     func stopCarousel()
     func startCarousel()
 }
 
-protocol BentoBoxViewable {
+protocol BentoBoxView {
     enum BentoBoxType {
         case small
         case medium
@@ -64,7 +64,7 @@ protocol BentoBoxViewable {
 - For simplicity, we have two families of products: iPhone and iPad.
 
 ```swift
-class iPhoneCarouselView: CarouselViewable {
+struct iPhoneCarouselView: CarouselView {
     func stopCarousel() {
         print("iPhone carousel stopped")
     }
@@ -74,7 +74,7 @@ class iPhoneCarouselView: CarouselViewable {
     }
 }
 
-class iPadCarouselView: CarouselViewable {
+struct iPadCarouselView: CarouselView {
     func stopCarousel() {
         print("iPad carousel stopped")
     }
@@ -84,20 +84,12 @@ class iPadCarouselView: CarouselViewable {
     }
 }
 
-class iPhoneBentoBoxView: BentoBoxViewable {
+struct iPhoneBentoBoxView: BentoBoxView {
     let type: BentoBoxType
-
-    init(type: BentoBoxType) {
-        self.type = type
-    }
 }
 
-class iPadBentoBoxView: BentoBoxViewable {
+struct iPadBentoBoxView: BentoBoxView {
     let type: BentoBoxType
-
-    init(type: BentoBoxType) {
-        self.type = type
-    }
 }
 ```
 
@@ -109,8 +101,8 @@ class iPadBentoBoxView: BentoBoxViewable {
 
 ```swift
 protocol AbstractComponentFactory {
-    func makeCarouselView() -> CarouselViewable
-    func makeBentoBoxView(type: BentoBoxViewable.BentoBoxType) -> BentoBoxViewable
+    func makeCarouselView() -> CarouselView
+    func makeBentoBoxView(type: BentoBoxView.BentoBoxType) -> BentoBoxView
 }
 ```
 
@@ -120,21 +112,21 @@ Implements the protocol declared by the abstract factory.
 
 ```swift
 class iPhoneComponentFactory: AbstractComponentFactory {
-    func makeCarouselView() -> CarouselViewable {
+    func makeCarouselView() -> CarouselView {
         return iPhoneCarouselView()
     }
 
-    func makeBentoBoxView(type: BentoBoxViewable.BentoBoxType) -> BentoBoxViewable {
+    func makeBentoBoxView(type: BentoBoxView.BentoBoxType) -> BentoBoxView {
         return iPhoneBentoBoxView(type: type)
     }
 }
 
 class iPadComponentFactory: AbstractComponentFactory {
-    func makeCarouselView() -> CarouselViewable {
+    func makeCarouselView() -> CarouselView {
         return iPadCarouselView()
     }
 
-    func makeBentoBoxView(type: BentoBoxViewable.BentoBoxType) -> BentoBoxViewable {
+    func makeBentoBoxView(type: BentoBoxView.BentoBoxType) -> BentoBoxView {
         return iPadBentoBoxView(type: type)
     }
 }
@@ -148,8 +140,8 @@ class iPadComponentFactory: AbstractComponentFactory {
 
 ```swift
 class ProductView {
-    private let carouselView: CarouselViewable
-    private let bentoBoxView: BentoBoxViewable
+    private let carouselView: CarouselView
+    private let bentoBoxView: BentoBoxView
 
     init(factory: AbstractComponentFactory) {
         self.carouselView = factory.makeCarouselView()
