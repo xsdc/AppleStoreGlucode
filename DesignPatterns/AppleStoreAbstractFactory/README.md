@@ -64,7 +64,7 @@ protocol BentoBoxView {
 - For simplicity, we have two families of products: iPhone and iPad.
 
 ```swift
-struct iPhoneCarouselView: CarouselView {
+struct IPhoneCarouselView: CarouselView {
     func stopCarousel() {
         print("iPhone carousel stopped")
     }
@@ -74,7 +74,7 @@ struct iPhoneCarouselView: CarouselView {
     }
 }
 
-struct iPadCarouselView: CarouselView {
+struct IPadCarouselView: CarouselView {
     func stopCarousel() {
         print("iPad carousel stopped")
     }
@@ -84,11 +84,11 @@ struct iPadCarouselView: CarouselView {
     }
 }
 
-struct iPhoneBentoBoxView: BentoBoxView {
+struct IPhoneBentoBoxView: BentoBoxView {
     let type: BentoBoxType
 }
 
-struct iPadBentoBoxView: BentoBoxView {
+struct IPadBentoBoxView: BentoBoxView {
     let type: BentoBoxType
 }
 ```
@@ -111,23 +111,23 @@ protocol AbstractComponentFactory {
 Implements the protocol declared by the abstract factory.
 
 ```swift
-class iPhoneComponentFactory: AbstractComponentFactory {
+class IPhoneComponentFactory: AbstractComponentFactory {
     func makeCarouselView() -> CarouselView {
-        return iPhoneCarouselView()
+        return IPhoneCarouselView()
     }
 
     func makeBentoBoxView(type: BentoBoxView.BentoBoxType) -> BentoBoxView {
-        return iPhoneBentoBoxView(type: type)
+        return IPhoneBentoBoxView(type: type)
     }
 }
 
-class iPadComponentFactory: AbstractComponentFactory {
+class IPadComponentFactory: AbstractComponentFactory {
     func makeCarouselView() -> CarouselView {
-        return iPadCarouselView()
+        return IPadCarouselView()
     }
 
     func makeBentoBoxView(type: BentoBoxView.BentoBoxType) -> BentoBoxView {
-        return iPadBentoBoxView(type: type)
+        return IPadBentoBoxView(type: type)
     }
 }
 ```
@@ -158,14 +158,14 @@ class ProductView {
 ## Example
 
 ```swift
-let iPhoneComponentFactory = iPhoneComponentFactory()
+let iPhoneComponentFactory = IPhoneComponentFactory()
 let iPhoneProductView = ProductView(factory: iPhoneComponentFactory)
 iPhoneProductView.display()
 // Output:
 // iPhone carousel started
 // BentoBox type: medium
 
-let iPadComponentFactory = iPadComponentFactory()
+let iPadComponentFactory = IPadComponentFactory()
 let iPadProductView = ProductView(factory: iPadComponentFactory)
 iPadProductView.display()
 // Output:
