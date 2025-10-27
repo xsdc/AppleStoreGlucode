@@ -32,6 +32,8 @@ A **Mediator** coordinates communication between the configuration, summary, and
 
 #### Mediator protocol
 
+Defines the communication contract that all participating components use to interact indirectly.
+
 ```swift
 protocol ProductMediating: AnyObject {
     func configurationDidChange(price: Decimal, deliveryDays: Int)
@@ -39,6 +41,8 @@ protocol ProductMediating: AnyObject {
 ```
 
 #### Concrete mediator
+
+Implements `ProductMediating` and coordinates the flow of information and logic between the components.
 
 ```swift
 final class ProductMediator: ProductMediating {
@@ -63,6 +67,8 @@ final class ProductMediator: ProductMediating {
 ```
 
 #### Colleagues
+
+The individual components that communicate exclusively through the mediator rather than directly with each other.
 
 ```swift
 final class ProductConfigurationViewModel {
@@ -100,7 +106,14 @@ let mediator = ProductMediator(configurationViewModel: configVM,
                                summaryViewModel: summaryVM,
                                deliveryViewModel: deliveryVM)
 
+// Initial values
+print(summaryVM.total)             // 0
+print(deliveryVM.deliveryEstimate) // "N/A"
+
+// User updates configuration
 configVM.userSelectedConfiguration(price: 2599.99, deliveryDays: 3)
-// summaryVM.total == 2599.99
-// deliveryVM.deliveryEstimate == "3-day delivery"
+
+// Outputs after mediator coordination
+print(summaryVM.total)             // 2599.99
+print(deliveryVM.deliveryEstimate) // "3-day delivery"
 ```
