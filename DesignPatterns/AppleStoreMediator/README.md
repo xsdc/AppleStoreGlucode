@@ -1,4 +1,4 @@
-![Mediator](https://github.com/user-attachments/assets/3c84efaa-f222-4a39-a647-9cf0b220a394)
+![Mediator](https://github.com/user-attachments/assets/5719db2b-d584-4ae7-a9b0-1d16deb1285d)
 
 <br />
 
@@ -10,114 +10,110 @@
 
 ## Pattern overview
 
-- The mediator pattern defines an object that encapsulates how a set of objects interact.
-- It promotes loose coupling by keeping objects from referring to each other explicitly, and it lets you vary their interaction independently.
-- For example, in a messaging application, the mediator object can manager the list of users and their messages.
+- The Mediator pattern is used to coordinate communication between multiple related objects in a system.
+
+- It defines a protocol that encapsulates how a set of objects interact.
+
+- This promotes loose coupling by keeping objects from referring to each other directly and centralising communication logic in one place.
 
 ## Problem statement
 
-- On a product page, we would like to keep the product price summary in sync with the product configuration.
-- The product configuration can be updated by the user, and the product price summary should be updated accordingly.
+When configuring a **MacBook** for purchase on the Apple Store, there are multiple components that must stay in sync:
 
-## Domain application
+1. **Product Configuration** – handles the user’s selections (processor, memory, storage).
+2. **Price Summary** – recalculates total price and taxes.
+3. **Delivery Estimator** – updates delivery times based on selected configuration.
 
-Mediator:
+If these components communicate directly, the result is tight coupling and hard-to-maintain code.
 
-Defines an interface for communicating with Colleague objects.
+A **Mediator** coordinates communication between the configuration, summary, and delivery components. When the user changes an option, the mediator updates the price and delivery estimate, keeping everything consistent without the components knowing about each other.
+
+## Definitions
+
+#### Mediator protocol
+
+Defines the communication contract that all participating components use to interact indirectly.
 
 ```swift
-protocol ConfigurationManager {
-    func displayTypeChanged(_ type: String)
-    func chipTypeChanged(_ type: String)
-    func memoryTypeChanged(_ type: String)
-    func storageTypeChanged(_ type: String)
+protocol ProductMediating: AnyObject {
+    func configurationDidChange(price: Decimal, deliveryDays: Int)
 }
 ```
 
-ConcreteMediator:
+#### Concrete mediator
 
-- Implements cooperative behavior by coordinating Colleague objects.
-- Knows and maintains its colleagues.
+Implements `ProductMediating` and coordinates the flow of information and logic between the components.
 
 ```swift
-class MacBookProProduct: ConfigurationManager {
-    let productConfiguration: ProductConfiguration
-    let productPriceSummary: ProductPriceSummary
+final class ProductMediator: ProductMediating {
+    private let configurationViewModel: ProductConfigurationViewModel
+    private let summaryViewModel: ProductSummaryViewModel
+    private let deliveryViewModel: DeliveryEstimatorViewModel
 
-    init(bag: Bag, catalog: Catalog) {
-        self.bag = bag
-        self.catalog = catalog
+    init(configurationViewModel: ProductConfigurationViewModel,
+         summaryViewModel: ProductSummaryViewModel,
+         deliveryViewModel: DeliveryEstimatorViewModel) {
+        self.configurationViewModel = configurationViewModel
+        self.summaryViewModel = summaryViewModel
+        self.deliveryViewModel = deliveryViewModel
+        configurationViewModel.mediator = self
     }
 
-    func displayTypeChanged(_ type: String) {
-        productPriceSummary.updateDisplayType(type)
-    }
-
-    func chipTypeChanged(_ type: String) {
-        productPriceSummary.updateChipType(type)
-    }
-
-    func memoryTypeChanged(_ type: String) {
-        productPriceSummary.updateMemoryType(type)
-    }
-
-    func storageTypeChanged(_ type: String) {
-        productPriceSummary.updateStorageType(type)
+    func configurationDidChange(price: Decimal, deliveryDays: Int) {
+        summaryViewModel.updateTotal(to: price)
+        deliveryViewModel.updateEstimate(days: deliveryDays)
     }
 }
 ```
 
-Colleague classes:
+#### Colleagues
 
-- Each Colleague class knows its Mediator object.
-- Each colleague communicates with its mediator whenever it would have otherwise communicated with another colleague.
+The individual components that communicate exclusively through the mediator rather than directly with each other.
 
 ```swift
-class ProductPriceSummary {
-    let configurationManager: ConfigurationManager
+final class ProductConfigurationViewModel {
+    weak var mediator: ProductMediating?
 
-    init(configurationManager: ConfigurationManager) {
-        self.configurationManager = configurationManager
-    }
-
-    func updateDisplayType(_ type: String) {
-        // Update display type
-    }
-
-    func updateChipType(_ type: String) {
-        // Update chip type
-    }
-
-    func updateMemoryType(_ type: String) {
-        // Update memory type
-    }
-
-    func updateStorageType(_ type: String) {
-        // Update storage type
+    func userSelectedConfiguration(price: Decimal, deliveryDays: Int) {
+        mediator?.configurationDidChange(price: price, deliveryDays: deliveryDays)
     }
 }
 
-class ProductConfiguration {
-    let configurationManager: ConfigurationManager
+final class ProductSummaryViewModel {
+    private(set) var total: Decimal = 0
 
-    init(configurationManager: ConfigurationManager) {
-        self.configurationManager = configurationManager
-    }
-
-    func displayTypeChanged(_ type: String) {
-        configurationManager.displayTypeChanged(type)
-    }
-
-    func chipTypeChanged(_ type: String) {
-        configurationManager.chipTypeChanged(type)
-    }
-
-    func memoryTypeChanged(_ type: String) {
-        configurationManager.memoryTypeChanged(type)
-    }
-
-    func storageTypeChanged(_ type: String) {
-        configurationManager.storageTypeChanged(type)
+    func updateTotal(to total: Decimal) {
+        self.total = total
     }
 }
+
+final class DeliveryEstimatorViewModel {
+    private(set) var deliveryEstimate: String = "N/A"
+
+    func updateEstimate(days: Int) {
+        deliveryEstimate = "\(days)-day delivery"
+    }
+}
+```
+
+## Example
+
+```swift
+let configVM = ProductConfigurationViewModel()
+let summaryVM = ProductSummaryViewModel()
+let deliveryVM = DeliveryEstimatorViewModel()
+let mediator = ProductMediator(configurationViewModel: configVM,
+                               summaryViewModel: summaryVM,
+                               deliveryViewModel: deliveryVM)
+
+// Initial values
+print(summaryVM.total)             // 0
+print(deliveryVM.deliveryEstimate) // "N/A"
+
+// User updates configuration
+configVM.userSelectedConfiguration(price: 2599.99, deliveryDays: 3)
+
+// Outputs after mediator coordination
+print(summaryVM.total)             // 2599.99
+print(deliveryVM.deliveryEstimate) // "3-day delivery"
 ```
