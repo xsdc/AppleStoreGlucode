@@ -4,94 +4,139 @@
 
 # State
 
-> Allow an object to alter its behavior when its internal state changes. The object will appear to change its class.
+> Allow an object to alter its behaviour when its internal state changes. The object will appear to change its class.
 >
 > _Reference: Design Patterns: Elements of Reusable Object-Oriented Software_
 
 ## Pattern overview
 
-- The State pattern allows object behavioral change based on its current state. This is often seen in applications where an object can be in multiple states, and each state has different behaviors associated with it.
-- For example, a `MusicPlayerButton` object can be in multiple states, such as `PlayingState`, `PausedState`, and `StoppedState`, each with its own behavior.
-- The State pattern encapsulates the state-specific behavior in separate classes, allowing for cleaner and more maintainable code.
+- The State pattern lets an object change its behaviour when its internal state changes.
+
+- It encapsulates state-specific behaviour into separate objects and delegates behaviour to the current state.
+ 
+- This avoids large conditional statements and promotes cleaner, more modular code.
+
+- In the Apple Store, we can apply the State pattern to the **product demo video player**, which behaves differently depending on whether a video is **playing**, **paused**, or **stopped**.
 
 ## Problem statement
 
-- The State pattern can be applied to the Apple Store to manage the state of an order. An order can be in multiple states, such as `Pending`, `Shipped`, and `Cancelled`, each with its own behavior.
-- The `OrderState` protocol defines the functions that illustrates how calling the same function can have different behavior based on the state of the order.
-- The `NotificationService` implementation illustrates how the current state can trigger different messages to be sent.
+- The Apple Store app allows users to watch demo videos for featured products such as the latest iPhone or MacBook.
+ 
+- The video player can be in one of three states: **Playing**, **Paused**, or **Stopped**.
+
+- The user interface should respond appropriately when a user taps the play or pause button, depending on the current state.
+
+- Without the State pattern, this logic would be scattered across conditional statements, making the player difficult to maintain and extend.
+
+- Using the State pattern, each state encapsulates its own behaviour, and the player simply delegates to the current state.
 
 ## Domain application
 
-Context:
 
-- Defines the interface of interest to clients.
-- Maintains an instance of a ConcreteState subclass that defines the current state.
+#### Context:
+
+Holds a reference to a state object that defines the current behaviour of the video player.
 
 ```swift
-class Order {
-    let id: String
-    let notificationService: NotificationService
-    var orderState: OrderState
+class ProductVideoPlayer {
+    private var state: PlayerState
 
-    init(id: String, notificationService: NotificationService) {
-        self.id = id
-        self.notificationService = notificationService
-        self.orderState = PendingOrderState()
+    init(state: PlayerState = StoppedState()) {
+        self.state = state
     }
 
-    func update(state: OrderState) {
-        orderState = state
+    func setState(_ state: PlayerState) {
+        self.state = state
+    }
+
+    func play() {
+        state.play(context: self)
+    }
+
+    func pause() {
+        state.pause(context: self)
+    }
+
+    func stop() {
+        state.stop(context: self)
     }
 }
 ```
 
-State:
+#### State Interface:
 
-Defines an interface for encapsulating the behavior associated with a particular state of the Context.
+Defines a common interface for all concrete states.
 
 ```swift
-protocol OrderState {
-    func shipOrder()
-    func cancelOrder()
+protocol PlayerState {
+    func play(context: ProductVideoPlayer)
+    func pause(context: ProductVideoPlayer)
+    func stop(context: ProductVideoPlayer)
 }
 ```
 
-ConcreteState subclasses:
+#### Concrete States:
 
-Each subclass implements a behavior associated with a state of the Context.
+Each concrete state implements behaviour specific to that state.
 
 ```swift
-class PendingOrderState: OrderState {
-    func shipOrder(order: Order) {
-        order.notificationService.sendMessage("Order #\(order.id) has been shipped.")
-        order.update(state: ShippedOrderState(order: order))
+class PlayingState: PlayerState {
+    func play(context: ProductVideoPlayer) {
+        print("Already playing.")
     }
 
-    func cancelOrder(order: Order) {
-        order.notificationService.sendMessage("Order #\(order.id) has been cancelled.")
-        order.update(state: CancelledOrderState(order: order))
+    func pause(context: ProductVideoPlayer) {
+        print("Pausing product video.")
+        context.setState(PausedState())
+    }
+
+    func stop(context: ProductVideoPlayer) {
+        print("Stopping product video.")
+        context.setState(StoppedState())
     }
 }
 
-class ShippedOrderState: OrderState {
-    func shipOrder(order: Order) {
-        order.notificationService.sendMessage("Order #\(order.id) is already on the way.")
+class PausedState: PlayerState {
+    func play(context: ProductVideoPlayer) {
+        print("Resuming product video.")
+        context.setState(PlayingState())
     }
 
-    func cancelOrder(order: Order) {
-        order.notificationService.sendMessage("Order #\(order.id) has been cancelled, and will return to Apple.")
-        order.update(state: CancelledOrderState(order: order))
+    func pause(context: ProductVideoPlayer) {
+        print("Video is already paused.")
+    }
+
+    func stop(context: ProductVideoPlayer) {
+        print("Stopping product video.")
+        context.setState(StoppedState())
     }
 }
 
-class CancelledOrderState: OrderState {
-    func shipOrder(order: Order) {
-        order.notificationService.sendMessage("Order #\(order.id) has been shipped.")
-        order.update(state: ShippedOrderState(order: order))
+class StoppedState: PlayerState {
+    func play(context: ProductVideoPlayer) {
+        print("Starting product video.")
+        context.setState(PlayingState())
     }
 
-    func cancelOrder(order: Order) {
-        order.notificationService.sendMessage("Order #\(order.id) has already been cancelled.")
+    func pause(context: ProductVideoPlayer) {
+        print("Cannot pause. Video is stopped.")
+    }
+
+    func stop(context: ProductVideoPlayer) {
+        print("Video is already stopped.")
     }
 }
+```
+
+#### Client:
+
+Simulates user interaction with the Apple Store’s video player.
+
+```swift
+let player = ProductVideoPlayer()
+
+player.play()   // Starting product video.
+player.pause()  // Pausing product video.
+player.play()   // Resuming product video.
+player.stop()   // Stopping product video.
 ```
