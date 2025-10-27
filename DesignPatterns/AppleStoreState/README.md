@@ -4,162 +4,139 @@
 
 # State
 
-> Allow an object to alter its behavior when its internal state changes. The object will appear to change its class.
+> Allow an object to alter its behaviour when its internal state changes. The object will appear to change its class.
 >
 > _Reference: Design Patterns: Elements of Reusable Object-Oriented Software_
 
 ## Pattern overview
 
-- The State pattern is concerned with keeping track of the state of an object and changing its behavior based on that state.
+- The State pattern lets an object change its behaviour when its internal state changes.
 
-- To illustrate, consider a video player that can be in one of two states: playing or paused.
+- It encapsulates state-specific behaviour into separate objects and delegates behaviour to the current state.
+ 
+- This avoids large conditional statements and promotes cleaner, more modular code.
 
-- The play/pause button should behave differently based on the current state of the player.
-
-- Play when paused, and pause when playing.
+- In the Apple Store, we can apply the State pattern to the **product demo video player**, which behaves differently depending on whether a video is **playing**, **paused**, or **stopped**.
 
 ## Problem statement
 
-- We would like to implement connection status handling for Apple Store product views.
+- The Apple Store app allows users to watch demo videos for featured products such as the latest iPhone or MacBook.
+ 
+- The video player can be in one of three states: **Playing**, **Paused**, or **Stopped**.
 
-- The view models should be able to observe the reachability status and update their state accordingly.
+- The user interface should respond appropriately when a user taps the play or pause button, depending on the current state.
 
-- For simplicity, we will start with implementating three states: initial, connection reachable, and connection unreachable.
+- Without the State pattern, this logic would be scattered across conditional statements, making the player difficult to maintain and extend.
 
-- We may encounter the problem of having multiple if-else statements to manage the state transitions.
+- Using the State pattern, each state encapsulates its own behaviour, and the player simply delegates to the current state.
 
-- When adding more states in the future, the code will become complex and difficult to maintain.
+## Domain application
 
-- The State pattern helps us manage state changes in a more modular and maintainable way.
-
-- We are able to have tailored behavior for each state update, and can easily add new states without modifying existing code.
-
-## Definitions
 
 #### Context:
 
-- Maintains a reference to the current state.
-
-- Responsible for delegating the state-specific behavior to the current state object.
-
-- The functionality may vary based on the current state, even when the same method is called.
+Holds a reference to a state object that defines the current behaviour of the video player.
 
 ```swift
-class ProductViewModel {
-    var showNoInternetConnectionAlert = false
-    var requests: [ServiceRequest] = []
-    private var state: State
+class ProductVideoPlayer {
+    private var state: PlayerState
 
-    init(state: State = InitialState()) {
+    init(state: PlayerState = StoppedState()) {
         self.state = state
     }
 
-    func updateConnection(toReachable isReachable: Bool) {
-        if isReachable {
-            state.connectionDidBecomeReachable(for: self)
-            state = ConnectionReachableState()
-        }
-        else {
-            state.connectionDidBecomeUnreachable(for: self)
-            state = ConnectionUnreachableState()
-        }
+    func setState(_ state: PlayerState) {
+        self.state = state
+    }
+
+    func play() {
+        state.play(context: self)
+    }
+
+    func pause() {
+        state.pause(context: self)
+    }
+
+    func stop() {
+        state.stop(context: self)
     }
 }
 ```
 
-#### State:
+#### State Interface:
 
-Defines the protocol for the state transitions.
+Defines a common interface for all concrete states.
 
 ```swift
-protocol State {
-    func connectionDidBecomeReachable(for viewModel: ProductViewModel)
-    func connectionDidBecomeUnreachable(for viewModel: ProductViewModel)
+protocol PlayerState {
+    func play(context: ProductVideoPlayer)
+    func pause(context: ProductVideoPlayer)
+    func stop(context: ProductVideoPlayer)
 }
 ```
 
-#### Concrete state subclasses:
+#### Concrete States:
 
-- Implementations for the state updates.
-
-- We use the State pattern to manage the state of the `ProductViewModel` object based on the reachability status.
+Each concrete state implements behaviour specific to that state.
 
 ```swift
-class InitialState: State {
-    func connectionDidBecomeReachable(for viewModel: ProductViewModel) {
-        viewModel.showNoInternetConnectionAlert = false
+class PlayingState: PlayerState {
+    func play(context: ProductVideoPlayer) {
+        print("Already playing.")
     }
 
-    func connectionDidBecomeUnreachable(for viewModel: ProductViewModel) {
-        viewModel.showNoInternetConnectionAlert = true
-
-        for index in viewModel.requests.indices {
-            viewModel.requests[index].isSuspended = true
-        }
-    }
-}
-
-class ConnectionUnreachableState: State {
-    func connectionDidBecomeReachable(for viewModel: ProductViewModel) {
-        viewModel.showNoInternetConnectionAlert = false
-
-        for index in viewModel.requests.indices {
-            viewModel.requests[index].isSuspended = false
-        }
+    func pause(context: ProductVideoPlayer) {
+        print("Pausing product video.")
+        context.setState(PausedState())
     }
 
-    func connectionDidBecomeUnreachable(for viewModel: ProductViewModel) {
-        viewModel.showNoInternetConnectionAlert = true
+    func stop(context: ProductVideoPlayer) {
+        print("Stopping product video.")
+        context.setState(StoppedState())
     }
 }
 
-class ConnectionReachableState: State {
-    func connectionDidBecomeReachable(for viewModel: ProductViewModel) {
-        viewModel.showNoInternetConnectionAlert = false
+class PausedState: PlayerState {
+    func play(context: ProductVideoPlayer) {
+        print("Resuming product video.")
+        context.setState(PlayingState())
     }
 
-    func connectionDidBecomeUnreachable(for viewModel: ProductViewModel) {
-        viewModel.showNoInternetConnectionAlert = true
+    func pause(context: ProductVideoPlayer) {
+        print("Video is already paused.")
+    }
 
-        for index in viewModel.requests.indices {
-            viewModel.requests[index].isSuspended = true
-        }
+    func stop(context: ProductVideoPlayer) {
+        print("Stopping product video.")
+        context.setState(StoppedState())
+    }
+}
+
+class StoppedState: PlayerState {
+    func play(context: ProductVideoPlayer) {
+        print("Starting product video.")
+        context.setState(PlayingState())
+    }
+
+    func pause(context: ProductVideoPlayer) {
+        print("Cannot pause. Video is stopped.")
+    }
+
+    func stop(context: ProductVideoPlayer) {
+        print("Video is already stopped.")
     }
 }
 ```
 
-## Example
+#### Client:
+
+Simulates user interaction with the Apple Store’s video player.
 
 ```swift
-struct ServiceRequest {
-    let id: Int
-    var isSuspended: Bool
-}
+let player = ProductVideoPlayer()
 
-let viewModel = ProductViewModel() // InitialState assigned
-viewModel.requests = [
-    ServiceRequest(id: 1, isSuspended: false),
-    ServiceRequest(id: 2, isSuspended: false)
-]
-
-print(viewModel.showNoInternetConnectionAlert) // false
-print(viewModel.requests) // [ServiceRequest(id: 1, isSuspended: false), ServiceRequest(id: 2, isSuspended: false)]
-
-// InitialState.connectionDidBecomeUnreachable called, ConnectionUnreachableState assigned
-viewModel.updateConnection(toReachable: false)
-
-print(viewModel.showNoInternetConnectionAlert) // true
-print(viewModel.requests) // [ServiceRequest(id: 1, isSuspended: true), ServiceRequest(id: 2, isSuspended: true)]
-
-// ConnectionUnreachableState.connectionDidBecomeReachable called, ConnectionReachableState assigned
-viewModel.updateConnection(toReachable: true)
-
-print(viewModel.showNoInternetConnectionAlert) // false
-print(viewModel.requests) // [ServiceRequest(id: 1, isSuspended: false), ServiceRequest(id: 2, isSuspended: false)]
-
-// ConnectionReachableState.connectionDidBecomeUnreachable called, ConnectionUnreachableState assigned
-viewModel.updateConnection(toReachable: false)
-
-print(viewModel.showNoInternetConnectionAlert) // true
-print(viewModel.requests) // [ServiceRequest(id: 1, isSuspended: true), ServiceRequest(id: 2, isSuspended: true)]
+player.play()   // Starting product video.
+player.pause()  // Pausing product video.
+player.play()   // Resuming product video.
+player.stop()   // Stopping product video.
 ```
