@@ -10,91 +10,82 @@
 
 ## Pattern overview
 
-- The Mediator pattern is used to facilitate communication between objects in a system.
+- The Mediator pattern is used to coordinate communication between multiple related objects in a system.
 
 - It defines a protocol that encapsulates how a set of objects interact.
 
-- This promotes loose coupling by keeping objects from referring to each other explicitly.
+- This promotes loose coupling by keeping objects from referring to each other directly and centralising communication logic in one place.
 
 ## Problem statement
 
-- When configuring a MacBook for purchase on the Apple Store, two components are present: the product configuration and the product price summary.
+When configuring a **MacBook** for purchase on the Apple Store, there are multiple components that must stay in sync:
 
-- The product configuration is a part of the main body of the view, and the product summary is a footer that displays the total price of the product, among other details.
+1. **Product Configuration** – handles the user’s selections (processor, memory, storage).
+2. **Price Summary** – recalculates total price and taxes.
+3. **Delivery Estimator** – updates delivery times based on selected configuration.
 
-- If all the functionality for both the product configuration and the product summary is contained in a single view, it can lead to a large and complex view.
+If these components communicate directly, the result is tight coupling and hard-to-maintain code.
 
-- While communicatio between object may be easier, it can lead to tight coupling between the two components.
-
-- Instead, we want a modular design that allows for decoupling of the product configuration and the product summary.
-
-- The Mediator pattern facilitates communication between the product configuration and the product summary while keeping them decoupled.
+A **Mediator** coordinates communication between the configuration, summary, and delivery components. When the user changes an option, the mediator updates the price and delivery estimate, keeping everything consistent without the components knowing about each other.
 
 ## Definitions
 
-#### Mediator:
-
-- Defines the protocol we'll use to communicate price updates between the product configuration and the product summary.
+#### Mediator protocol
 
 ```swift
-protocol TotalUpdateHandler {
-    func totalUpdated(to total: Double)
+protocol ProductMediating: AnyObject {
+    func configurationDidChange(price: Decimal, deliveryDays: Int)
 }
 ```
 
-#### Concrete mediators:
-
-- Knows and maintains its colleagues.
-
-- Facilitates communication between them by implementing the `TotalUpdateHandler` protocol.
+#### Concrete mediator
 
 ```swift
-class ProductView: TotalUpdateHandler {
+final class ProductMediator: ProductMediating {
     private let configurationViewModel: ProductConfigurationViewModel
     private let summaryViewModel: ProductSummaryViewModel
+    private let deliveryViewModel: DeliveryEstimatorViewModel
 
-    init(configurationViewModel: ProductConfigurationViewModel, summaryViewModel: ProductSummaryViewModel) {
+    init(configurationViewModel: ProductConfigurationViewModel,
+         summaryViewModel: ProductSummaryViewModel,
+         deliveryViewModel: DeliveryEstimatorViewModel) {
         self.configurationViewModel = configurationViewModel
         self.summaryViewModel = summaryViewModel
-        self.configurationViewModel.delegate = self
+        self.deliveryViewModel = deliveryViewModel
+        configurationViewModel.mediator = self
     }
 
-    func totalUpdated(to total: Double) {
-        summaryViewModel.updateTotal(to: total)
+    func configurationDidChange(price: Decimal, deliveryDays: Int) {
+        summaryViewModel.updateTotal(to: price)
+        deliveryViewModel.updateEstimate(days: deliveryDays)
     }
 }
 ```
 
-#### Colleague classes:
-
-- They maintain a reference to their Mediator object if they need to communicate with other Colleague objects.
-
-- In our case, we have one way communication from the `ProductConfigurationViewModel` to the `ProductSummaryViewModel`.
-
-- The `ProductConfigurationViewModel` calls the `totalUpdated(to:)` method on the `TotalUpdateHandler` protocol.
-
-- In our case, that is implemented by the `ProductView` class.
-
-- The `ProductView` then calls the `updateTotal(to:)` method on the `ProductSummaryViewModel`.
+#### Colleagues
 
 ```swift
-class ProductSummaryViewModel {
-    private(set) var total: Double
+final class ProductConfigurationViewModel {
+    weak var mediator: ProductMediating?
 
-    init(total: Double, deliveryEstimate: String) {
-        self.total = total
+    func userSelectedConfiguration(price: Decimal, deliveryDays: Int) {
+        mediator?.configurationDidChange(price: price, deliveryDays: deliveryDays)
     }
+}
 
-    func updateTotal(to total: Double) {
+final class ProductSummaryViewModel {
+    private(set) var total: Decimal = 0
+
+    func updateTotal(to total: Decimal) {
         self.total = total
     }
 }
 
-class ProductConfigurationViewModel {
-    var delegate: TotalUpdateHandler?
+final class DeliveryEstimatorViewModel {
+    private(set) var deliveryEstimate: String = "N/A"
 
-    func configurationDidChange(withTotal total: Double) {
-        delegate?.totalUpdated(to: total)
+    func updateEstimate(days: Int) {
+        deliveryEstimate = "\(days)-day delivery"
     }
 }
 ```
@@ -102,16 +93,14 @@ class ProductConfigurationViewModel {
 ## Example
 
 ```swift
-let configurationViewModel = ProductConfigurationViewModel()
-let summaryViewModel = ProductSummaryViewModel(total: 999.99, deliveryEstimate: "1-2 days")
-let productView = ProductView(configurationViewModel: configurationViewModel, summaryViewModel: summaryViewModel)
+let configVM = ProductConfigurationViewModel()
+let summaryVM = ProductSummaryViewModel()
+let deliveryVM = DeliveryEstimatorViewModel()
+let mediator = ProductMediator(configurationViewModel: configVM,
+                               summaryViewModel: summaryVM,
+                               deliveryViewModel: deliveryVM)
 
-// Initial price
-print(summaryViewModel.total) // 999.99
-
-// Update price via the configuration view
-configurationViewModel.configurationDidChange(withTotal: 1099.99)
-
-// New price should be reflected in the summary view
-print(summaryViewModel.total) // 1099.99
+configVM.userSelectedConfiguration(price: 2599.99, deliveryDays: 3)
+// summaryVM.total == 2599.99
+// deliveryVM.deliveryEstimate == "3-day delivery"
 ```
