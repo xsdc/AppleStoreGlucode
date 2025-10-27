@@ -10,96 +10,157 @@
 
 ## Pattern overview
 
-- The Template Method pattern is a pattern that defines the skeleton of an algorithm in an operation, deferring some steps to subclasses.
-- For example, consider an onboarding process that consists of multiple steps, such as creating an account, setting up a profile, and selecting preferences.
-- The onboarding process can be implemented using the Template Method pattern by defining a template method that calls a series of steps to complete the onboarding process.
-- The steps can be overridden by subclasses to customize the onboarding process based on the user's preferences.
+- The Template Method pattern starts with defining a protocol listing steps in a sequence of operations we would like to perform.
+
+- We then provide a default implementation for each step in the sequence, as well as define the method that orchestrates the sequence.
+
+- Subclasses are then created to override the default implementation as needed.
 
 ## Problem statement
 
-- We would like to define a set of steps to rebuild an Apple Watch Studio configuration based on user input.
-- The Template Method pattern allows us to define a template method that calls a series of steps to configure an Apple Watch Studio.
-- The steps can be overridden by subclasses to customize the configuration based on the Apple Watch series.
+- Apple Store customers are able to configure their Apple Watch using the Apple Watch Studio.
 
-## Domain application
+- Let's assume the configuration is stored in memory in a way that is convenient for the frontend to display, but not in the expected format needed to send to the backend.
 
-AbstractClass:
+- Each watch series also has a different data structure we need to convert from.
 
-- Defines abstract primitive operations that concrete subclasses define to implement steps of an algorithm.
-- Implements a template method defining the skeleton of an algorithm.
-- The template method calls primitive operations as well as operations defined in AbstractClass or those of other objects.
+- We'll use the Template Method pattern to define the steps needed to convert the configuration to the expected format.
+
+- The pattern will allow us to cater to different watch series by providing a custom implementation for each series.
+
+- Each series would have its own implementation of the steps needed to convert the configuration to the expected format.
+
+## Definitions
+
+#### Abstract class:
+
+- Defines the steps in the sequence needed to map the configuration to the expected format.
+
+- Provides a default implementation for each step in the sequence.
+
+- Defines the default implementation of `process`, which orchestrates the sequence.
+
+- We provide a default implementation of the `AppleWatchConfiguration` called `DefaultAppleWatchConfiguration`, which marks the `process()` method as `final` to protect the process defined.
 
 ```swift
 protocol AppleWatchConfiguration {
-    func templateMethod()
-
-    func selectWatchCaseSize()
-    func selectWatchCaseMaterial()
-    func selectWatchBand()
-    func selectWatchBandSize()
-    func selectWatchEngraving()
+    func process()
+    func mapDataForWatchCaseSize()
+    func mapDataForWatchCaseMaterial()
+    func mapDataForWatchBand()
+    func mapDataForWatchBandSize()
+    func mapDataForWatchEngraving()
 }
 
-extension AppleWatchConfiguration {
-    func templateMethod() {
-        selectWatchCaseSize()
-        selectWatchCaseMaterial()
-        selectWatchBand()
-        selectWatchBandSize()
-        selectWatchEngraving()
+class DefaultAppleWatchConfiguration: AppleWatchConfiguration {
+    final func process() {
+        mapDataForWatchCaseSize()
+        mapDataForWatchCaseMaterial()
+        mapDataForWatchBand()
+        mapDataForWatchBandSize()
+        mapDataForWatchEngraving()
     }
 
-    func selectWatchCaseMaterial() {
-        print("Configure default Apple Watch case material.")
+    func mapDataForWatchCaseSize() {
+        print("Default implementation for case size.")
     }
-
-    func selectWatchBand() {
-        print("Configure default Apple Watch band.")
+    
+    func mapDataForWatchCaseMaterial() {
+        print("Default implementation for case material.")
     }
-
-    func selectWatchCaseSize() {
-        print("Configure default Apple Watch case size.")
+    
+    func mapDataForWatchBand() {
+        print("Default implementation for watch band.")
     }
-
-    func selectWatchBandSize() {
-        print("Configure Apple Watch band size.")
+    
+    func mapDataForWatchBandSize() {
+        print("Default implementation for band size.")
     }
-
-    func selectWatchEngraving() {
-        print("No engraving by default.")
+    
+    func mapDataForWatchEngraving() {
+        print("Default implementation for engraving.")
     }
 }
 ```
 
-ConcreteClass:
+#### Concrete classes:
 
-Implements the primitive operations to carry out subclass-specific steps of the algorithm.
+- Provides the custom configuration for each series.
+
+- The Hermès Series 10 Apple Watch has a different configuration format than the Series 10 Apple Watch.
+
+- The Hermès series only offers the titanium case material, which is why we can set it manually in the `mapDataForWatchCaseMaterial` method.
+
+- The Hermès series does not offer the engraving option, so we can skip the `mapDataForWatchEngraving` method.
+
+- For simplicity, the data mapping implementations are omitted.
 
 ```swift
-class Series10AppleWatchConfiguration: AppleWatchConfiguration {
-    func templateMethod() {
-        selectWatchCaseSize()
-        selectWatchCaseMaterial()
-        selectWatchBand()
-        selectWatchBandSize()
-        selectWatchEngraving()
+class Series10AppleWatchConfiguration: DefaultAppleWatchConfiguration {
+    override func mapDataForWatchCaseSize() {
+        print("Implementation for converting the data structure for the Apple Watch Series 10 case size.")
+    }
+
+    override func mapDataForWatchCaseMaterial() {
+        print("Implementation for converting the data structure for the Apple Watch Series 10 case material.")
+    }
+
+    override func mapDataForWatchBand() {
+        print("Implementation for converting the data structure for the Apple Watch Series 10 band.")
+    }
+
+    override func mapDataForWatchBandSize() {
+        print("Implementation for converting the data structure for the Apple Watch Series 10 band size.")
+    }
+
+    override func mapDataForWatchEngraving() {
+        print("Implementation for converting the data structure for the Apple Watch Series 10 engraving.")
     }
 }
 
-class HermèsSeries10AppleWatchConfiguration: AppleWatchConfiguration {
-    func templateMethod() {
-        selectWatchCaseSize()
-        selectWatchCaseMaterial()
-        selectWatchBand()
-        selectWatchBandSize()
+class HermèsSeries10AppleWatchConfiguration: DefaultAppleWatchConfiguration {
+    override func mapDataForWatchCaseSize() {
+        print("Implementation for converting the data structure for the Apple Watch Hermès Series case size.")
     }
 
-    func selectWatchCaseMaterial() {
-        print("Configure titanium for Apple Watch Hermès Series case material.")
+    override func mapDataForWatchCaseMaterial() {
+        print("Implementation for converting the data structure for the Apple Watch Hermès Series case material.")
     }
 
-    func selectWatchBand() {
-        print("Configure Apple Watch Hermès Series specific band.")
+    override func mapDataForWatchBand() {
+        print("Implementation for converting the data structure for the Apple Watch Hermès Series band.")
+    }
+
+    override func mapDataForWatchBandSize() {
+        print("Implementation for converting the data structure for the Apple Watch Hermès Series band size.")
+    }
+
+    override func mapDataForWatchEngraving() {
+        print("Implementation for converting the data structure for the Apple Watch Hermès Series 10 engraving.")
     }
 }
+```
+
+## Example
+
+```swift
+let series10AppleWatchConfiguration = Series10AppleWatchConfiguration()
+series10AppleWatchConfiguration.process()
+
+// Output:
+// Implementation for converting the front data structure for the Apple Watch Series 10 case size.
+// Implementation for converting the front data structure for the Apple Watch Series 10 case material.
+// Implementation for converting the front data structure for the Apple Watch Series 10 band.
+// Implementation for converting the front data structure for the Apple Watch Series 10 band size.
+// Implementation for converting the front data structure for the Apple Watch Series 10 engraving.
+
+let hermèsSeries10AppleWatchConfiguration = HermèsSeries10AppleWatchConfiguration()
+hermèsSeries10AppleWatchConfiguration.process()
+
+// Output:
+// Implementation for converting the data structure for the Apple Watch Hermès Series case size.
+// Implementation for converting the data structure for the Apple Watch Hermès Series case material.
+// Implementation for converting the data structure for the Apple Watch Hermès Series band.
+// Implementation for converting the data structure for the Apple Watch Hermès Series band size.
+// Implementation for converting the data structure for the Apple Watch Hermès Series 10 engraving.
 ```
